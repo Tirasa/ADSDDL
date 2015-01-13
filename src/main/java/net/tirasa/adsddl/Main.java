@@ -23,10 +23,9 @@ import net.tirasa.adsddl.ntsd.data.AceType;
 import net.tirasa.adsddl.ntsd.data.AceFlag;
 import net.tirasa.adsddl.ntsd.utils.SignedInt;
 
-import java.io.IOException;
+import java.util.Properties;
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.Control;
@@ -40,55 +39,37 @@ import net.tirasa.adsddl.ntsd.utils.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SDDLExtractor {
+public class Main {
 
     private static final long serialVersionUID = 1L;
 
-    private static final Logger log = LoggerFactory.getLogger(SDDLExtractor.class);
+    private static final Logger log = LoggerFactory.getLogger(Main.class);
 
-    @SuppressWarnings("UseOfObsoleteCollectionType")
-    private java.util.Hashtable env = new java.util.Hashtable();
+    @SuppressWarnings({ "UseOfObsoleteCollectionType", "rawtypes" })
+    private final java.util.Hashtable env;
 
     protected LdapContext ctx;
 
-    private String domain = "tirasa.net";
+    private final String baseContext;
 
-    private String domainDN = "DC=tirasa,DC=net";
-
-    private String adminName = "pocadmin@" + domain;
-
-    private String adminPassword = "Password1";
-
-    private String userName = "cn=ADClientTestCreate,cn=Users," + domainDN;
-
-    private String url = "ldaps://11.10.10.4:636";
+    private final String searchFilter;
 
     public String[] control = {
         "SR", "RM", "PS", "PD", "SI", "DI", "SC", "DC", "DT", "SS", "SD", "SP", "DD", "DP", "GD", "OD" };
 
-    public SDDLExtractor() throws Exception {
-        init();
-    }
+    @SuppressWarnings({ "unchecked", "UseOfObsoleteCollectionType" })
+    public Main() throws Exception {
+        final Properties prop = new Properties();
+        prop.load(Main.class.getResourceAsStream("/conf.properties"));
 
-    public static void main(String[] args) {
-        try {
-
-            final SDDLExtractor client = new SDDLExtractor();
-            client.search();
-
-        } catch (Exception e) {
-            log.error("Error extracting SDDL", e);
-        }
-    }
-
-    private void init() throws NamingException, IOException {
+        this.env = new java.util.Hashtable<>();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 
         //set security credentials, note using simple cleartext authentication
         env.put(Context.SECURITY_AUTHENTICATION, "simple");
         env.put("java.naming.ldap.version", "3");
-        env.put(Context.SECURITY_PRINCIPAL, adminName);
-        env.put(Context.SECURITY_CREDENTIALS, adminPassword);
+        env.put(Context.SECURITY_PRINCIPAL, prop.getProperty("principal"));
+        env.put(Context.SECURITY_CREDENTIALS, prop.getProperty("credentials"));
         env.put(Context.SECURITY_PROTOCOL, "ssl");
         env.put("java.naming.ldap.factory.socket", "net.tirasa.adsddl.DummySocketFactory");
         env.put("java.naming.ldap.attributes.binary", "nTSecurityDescriptor");
@@ -96,23 +77,39 @@ public class SDDLExtractor {
         env.put(Context.REFERRAL, "follow");
 
         //connect to my domain controller
-        env.put(Context.PROVIDER_URL, url);
+        env.put(Context.PROVIDER_URL, prop.getProperty("url"));
 
         // Create the initial directory context
         ctx = new InitialLdapContext(env, null);
+
+        baseContext = prop.getProperty("baseContext");
+        searchFilter = prop.getProperty("searchFilter");
     }
 
-    private void search() throws Exception {
+    public static void main(String[] args) {
+
+        try {
+            log.debug("Work loading ....");
+            final Main client = new Main();
+            client.extractSDDL();
+            log.debug("Work completed");
+
+        } catch (Exception e) {
+            log.error("Error parsing SDDL", e);
+        }
+
+        System.exit(0);
+    }
+
+    private void extractSDDL() throws Exception {
 
         final SearchControls controls = new SearchControls();
         controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
         controls.setReturningAttributes(new String[] { "nTSecurityDescriptor" });
 
-        final String filter = "(&(objectclass=user)(sAMAccountName=testmb))";
-
         ctx.setRequestControls(new Control[] { new SDFlagsControl(0x00000001 + 0x00000002 + 0x00000004 + 0x00000008) });
 
-        final NamingEnumeration<SearchResult> results = ctx.search(domainDN, filter, controls);
+        final NamingEnumeration<SearchResult> results = ctx.search(baseContext, searchFilter, controls);
 
         while (results.hasMore()) {
             final SearchResult res = results.next();
@@ -138,12 +135,14 @@ public class SDDLExtractor {
 
             if (sddl.getOffsetOwner() > 0) {
                 // retrieve owner sid
-                log.info("Owner: {}", Hex.get(sddl.getOwner().getIdentifierAuthority()));
+                log.info("Owner SID: ....");
+                printSID(sddl.getOwner());
             }
 
             if (sddl.getOffsetGroup() > 0) {
                 // retrieve owner sid
-                log.info("Group: {}", Hex.get(sddl.getGroup().getIdentifierAuthority()));
+                log.info("Group SID: ....");
+                printSID(sddl.getGroup());
             }
 
             if (sddl.getOffsetSACL() > 0) {
@@ -178,6 +177,18 @@ public class SDDLExtractor {
             log.info("------------------------------------------");
             final ACE ace = acl.getAce(i);
             printACE(ace);
+        }
+    }
+
+    private void printSID(final SID sid) {
+        log.info("SID Revision: {}", Hex.get(sid.getRevision()));
+
+        int subAuthCount = SignedInt.getInt(sid.getSubAuthorityCount());
+        log.info("SID Sub Authorities Count: {}", subAuthCount);
+        log.info("SID Identifier Authority: {}", Hex.get(sid.getIdentifierAuthority()));
+        log.info("SID Sub Authorities: ");
+        for (byte[] sub : sid.getSubAuthorities()) {
+            log.info(" - {}", Hex.get(sub));
         }
     }
 
@@ -221,15 +232,6 @@ public class SDDLExtractor {
         }
 
         final SID sid = ace.getSid();
-
-        log.info("SID Revision: {}", Hex.get(sid.getRevision()));
-
-        int subAuthCount = SignedInt.getInt(sid.getSubAuthorityCount());
-        log.info("SID Sub Authorities Count: {}", subAuthCount);
-        log.info("SID Identifier Authority: {}", Hex.get(sid.getIdentifierAuthority()));
-        log.info("SID Sub Authorities: ");
-        for (byte[] sub : sid.getSubAuthorities()) {
-            log.info(" - {}", Hex.get(sub));
-        }
+        printSID(sid);
     }
 }
