@@ -18,15 +18,22 @@ package net.tirasa.adsddl.ntsd;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import net.tirasa.adsddl.ntsd.data.AclRevision;
 import net.tirasa.adsddl.ntsd.utils.SignedInt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ACL {
 
-    private AclRevision revision;
+    /**
+     * Logger.
+     */
+    protected static final Logger log = LoggerFactory.getLogger(ACL.class);
 
-    private int size;
+    private AclRevision revision;
 
     private int aceCount;
 
@@ -47,7 +54,6 @@ public class ACL {
         // read for Dacl
         byte[] bytes = SignedInt.getBytes(buff.get(pos));
         revision = AclRevision.parseValue(bytes[0]);
-        size = SignedInt.getInt(bytes[3], bytes[2]);
 
         pos++;
         bytes = SignedInt.getBytes(buff.get(pos));
@@ -70,6 +76,13 @@ public class ACL {
     }
 
     public int getSize() {
+        int size = 8;
+
+        // add aces
+        for (ACE ace : aces) {
+            size += ace.getSize();
+        }
+
         return size;
     }
 
@@ -86,6 +99,9 @@ public class ACL {
     }
 
     public byte[] toByteArray() {
+
+        int size = getSize();
+
         final ByteBuffer buff = ByteBuffer.allocate(size);
 
         // add revision
@@ -115,4 +131,34 @@ public class ACL {
 
         return buff.array();
     }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (!(o instanceof ACL)) {
+            return false;
+        }
+
+        final ACL ext = ACL.class.cast(o);
+
+        if (getSize() != ext.getSize()) {
+            log.debug("Different size");
+            return false;
+        }
+
+        if (getAceCount() != ext.getAceCount()) {
+            log.debug("Different ace count");
+            return false;
+        }
+
+        return new HashSet<>(getAces()).equals(new HashSet<>(ext.getAces()));
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 43 * hash + this.aceCount;
+        hash = 43 * hash + Objects.hashCode(this.aces);
+        return hash;
+    }
+
 }

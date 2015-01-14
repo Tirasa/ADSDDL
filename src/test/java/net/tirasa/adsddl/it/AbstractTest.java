@@ -21,6 +21,7 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 
@@ -69,5 +70,10 @@ public abstract class AbstractTest extends net.tirasa.adsddl.unit.AbstractTest {
 
         baseContext = prop.getProperty("baseContext");
         searchFilter = prop.getProperty("searchFilter");
+    }
+
+    @AfterClass
+    public static void close() throws NamingException {
+        ctx.close();
     }
 }

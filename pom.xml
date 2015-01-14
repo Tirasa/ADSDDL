@@ -63,6 +63,7 @@ limitations under the License.
     <log4j.version>2.1</log4j.version>
     <disruptor.version>3.3.0</disruptor.version>
     <commons.logging.version>1.2</commons.logging.version>
+    <commons.io.version>1.3.2</commons.io.version>
     <xml.apis.version>1.4.01</xml.apis.version>
     <surfire.version>2.18.1</surfire.version>
   </properties>
@@ -104,6 +105,12 @@ limitations under the License.
       <artifactId>commons-logging</artifactId>
       <version>${commons.logging.version}</version>
       <scope>provided</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>${commons.io.version}</version>
     </dependency>
 
     <dependency>
@@ -162,7 +169,6 @@ limitations under the License.
               <runOrder>alphabetical</runOrder>
               <skipTests>false</skipTests>
               <includes>
-                <include>**/unit/*Test.java</include>
                 <include>**/it/*Test.java</include>
               </includes>
             </configuration>

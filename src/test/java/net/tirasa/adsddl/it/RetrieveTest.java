@@ -15,32 +15,19 @@
  */
 package net.tirasa.adsddl.it;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Arrays;
 import javax.naming.NamingEnumeration;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.Control;
-import net.tirasa.adsddl.ntsd.ACE;
-import net.tirasa.adsddl.ntsd.SDDL;
-import net.tirasa.adsddl.ntsd.data.AceObjectFlags;
-import net.tirasa.adsddl.ntsd.data.AceType;
 import net.tirasa.adsddl.ntsd.data.SDFlagsControl;
-import net.tirasa.adsddl.ntsd.utils.GUID;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class RetrieveTest extends AbstractTest {
 
     private static final long serialVersionUID = 1L;
 
-    private static final String UCP_OBJECT_GUID = "AB721A53-1E2F-11D0-9819-00AA0040529B";
-
     @Test
     public void UnMarshall() throws Exception {
-
         final SearchControls controls = new SearchControls();
         controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
         controls.setReturningAttributes(new String[] { "nTSecurityDescriptor" });
@@ -52,22 +39,12 @@ public class RetrieveTest extends AbstractTest {
         while (results.hasMore()) {
             final SearchResult res = results.next();
             final byte[] src = (byte[]) res.getAttributes().get("nTSecurityDescriptor").get();
-
-            final SDDL sddl = new SDDL(src);
-
-            if (log.isDebugEnabled()) {
-                printSDDL(sddl);
-            }
-
-            final byte[] marshalled = sddl.toByteArray();
-
-            Assert.assertTrue(Arrays.equals(src, marshalled));
+            UnMarshall(src);
         }
     }
 
     @Test
-    public void UserChangePasswordTest() throws Exception {
-
+    public void UserChangePassword() throws Exception {
         final SearchControls controls = new SearchControls();
         controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
         controls.setReturningAttributes(new String[] { "nTSecurityDescriptor" });
@@ -79,34 +56,12 @@ public class RetrieveTest extends AbstractTest {
         while (results.hasMore()) {
             final SearchResult res = results.next();
             final byte[] src = (byte[]) res.getAttributes().get("nTSecurityDescriptor").get();
-            final SDDL sddl = new SDDL(src);
-
-            if (log.isDebugEnabled()) {
-                printSDDL(sddl);
-            }
-
-            final byte[] marshalled = sddl.toByteArray();
-
-            Assert.assertTrue(Arrays.equals(src, marshalled));
-
-            assertFalse(sddl.getDacl().getAces().isEmpty());
-            boolean found = false;
-            for (ACE ace : sddl.getDacl().getAces()) {
-                if ((ace.getType() == AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE
-                        || ace.getType() == AceType.ACCESS_DENIED_OBJECT_ACE_TYPE)
-                        && ace.getObjectFlags().getFlags().contains(AceObjectFlags.Flag.ACE_OBJECT_TYPE_PRESENT)) {
-                    if (GUID.getGuidAsString(ace.getObjectType()).equals(UCP_OBJECT_GUID)) {
-                        found = true;
-                    }
-                }
-            }
-            assertTrue(found);
+            UserChangePassword(src);
         }
     }
 
     @Test
-    public void ucpChangeUnMarshallTest() throws Exception {
-
+    public void ucpChangeUnMarshall() throws Exception {
         final SearchControls controls = new SearchControls();
         controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
         controls.setReturningAttributes(new String[] { "nTSecurityDescriptor" });
@@ -118,29 +73,7 @@ public class RetrieveTest extends AbstractTest {
         while (results.hasMore()) {
             final SearchResult res = results.next();
             final byte[] src = (byte[]) res.getAttributes().get("nTSecurityDescriptor").get();
-            final SDDL sddl = new SDDL(src);
-
-            if (log.isDebugEnabled()) {
-                printSDDL(sddl);
-            }
-
-            Assert.assertTrue(Arrays.equals(src, sddl.toByteArray()));
-
-            for (ACE ace : sddl.getDacl().getAces()) {
-                if ((ace.getType() == AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE
-                        || ace.getType() == AceType.ACCESS_DENIED_OBJECT_ACE_TYPE)
-                        && ace.getObjectFlags().getFlags().contains(AceObjectFlags.Flag.ACE_OBJECT_TYPE_PRESENT)) {
-                    if (GUID.getGuidAsString(ace.getObjectType()).equals(UCP_OBJECT_GUID)) {
-                        if (ace.getType() == AceType.ACCESS_DENIED_OBJECT_ACE_TYPE) {
-                            ace.setType(AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE);
-                        } else {
-                            ace.setType(AceType.ACCESS_DENIED_OBJECT_ACE_TYPE);
-                        }
-                    }
-                }
-            }
-
-            Assert.assertFalse(Arrays.equals(src, sddl.toByteArray()));
+            ucpChangeUnMarshall(src);
         }
     }
 }

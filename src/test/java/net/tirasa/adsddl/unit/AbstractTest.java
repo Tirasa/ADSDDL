@@ -15,7 +15,11 @@
  */
 package net.tirasa.adsddl.unit;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
+import java.util.Arrays;
 import net.tirasa.adsddl.ntsd.ACE;
 import net.tirasa.adsddl.ntsd.ACL;
 import net.tirasa.adsddl.ntsd.SDDL;
@@ -27,6 +31,7 @@ import net.tirasa.adsddl.ntsd.data.AceType;
 import net.tirasa.adsddl.ntsd.utils.GUID;
 import net.tirasa.adsddl.ntsd.utils.Hex;
 import net.tirasa.adsddl.ntsd.utils.SignedInt;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +58,65 @@ public abstract class AbstractTest {
     @SuppressWarnings("unchecked")
     public static void setUpConnection() throws IOException {
         // nothing to set up
+    }
+
+    protected void UnMarshall(final byte[] src) throws Exception {
+        final SDDL sddl = new SDDL(src);
+
+        if (log.isDebugEnabled()) {
+            printSDDL(sddl);
+        }
+
+//        Assert.assertTrue(sddl.equals(new SDDL(sddl.toByteArray())));
+    }
+
+    protected void UserChangePassword(final byte[] src) throws Exception {
+        final SDDL sddl = new SDDL(src);
+
+        if (log.isDebugEnabled()) {
+            printSDDL(sddl);
+        }
+
+        Assert.assertTrue(Arrays.equals(src, sddl.toByteArray()));
+
+        assertFalse(sddl.getDacl().getAces().isEmpty());
+        boolean found = false;
+        for (ACE ace : sddl.getDacl().getAces()) {
+            if ((ace.getType() == AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE
+                    || ace.getType() == AceType.ACCESS_DENIED_OBJECT_ACE_TYPE)
+                    && ace.getObjectFlags().getFlags().contains(AceObjectFlags.Flag.ACE_OBJECT_TYPE_PRESENT)) {
+                if (GUID.getGuidAsString(ace.getObjectType()).equals(UCP_OBJECT_GUID)) {
+                    found = true;
+                }
+            }
+        }
+        assertTrue(found);
+    }
+
+    protected void ucpChangeUnMarshall(final byte[] src) throws Exception {
+        final SDDL sddl = new SDDL(src);
+
+        if (log.isDebugEnabled()) {
+            printSDDL(sddl);
+        }
+
+        Assert.assertTrue(Arrays.equals(src, sddl.toByteArray()));
+
+        for (ACE ace : sddl.getDacl().getAces()) {
+            if ((ace.getType() == AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE
+                    || ace.getType() == AceType.ACCESS_DENIED_OBJECT_ACE_TYPE)
+                    && ace.getObjectFlags().getFlags().contains(AceObjectFlags.Flag.ACE_OBJECT_TYPE_PRESENT)) {
+                if (GUID.getGuidAsString(ace.getObjectType()).equals(UCP_OBJECT_GUID)) {
+                    if (ace.getType() == AceType.ACCESS_DENIED_OBJECT_ACE_TYPE) {
+                        ace.setType(AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE);
+                    } else {
+                        ace.setType(AceType.ACCESS_DENIED_OBJECT_ACE_TYPE);
+                    }
+                }
+            }
+        }
+
+        Assert.assertFalse(Arrays.equals(src, sddl.toByteArray()));
     }
 
     protected void printSDDL(final SDDL sddl) {

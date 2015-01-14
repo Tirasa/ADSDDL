@@ -17,21 +17,29 @@ package net.tirasa.adsddl.ntsd;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import net.tirasa.adsddl.ntsd.data.AceFlag;
 import net.tirasa.adsddl.ntsd.data.AceObjectFlags;
 import net.tirasa.adsddl.ntsd.data.AceRights;
 import net.tirasa.adsddl.ntsd.data.AceType;
 import net.tirasa.adsddl.ntsd.utils.Hex;
 import net.tirasa.adsddl.ntsd.utils.SignedInt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ACE {
+
+    /**
+     * Logger.
+     */
+    protected static final Logger log = LoggerFactory.getLogger(ACE.class);
 
     private AceType type;
 
     private List<AceFlag> flags;
-
-    private int size;
 
     private AceRights rights;
 
@@ -61,7 +69,8 @@ public class ACE {
         byte[] bytes = SignedInt.getBytes(buff.get(pos));
         type = AceType.parseValue(bytes[0]);
         flags = AceFlag.parseValue(bytes[1]);
-        size = SignedInt.getInt(bytes[3], bytes[2]);
+
+        int size = SignedInt.getInt(bytes[3], bytes[2]);
 
         pos++;
         rights = AceRights.parseValue(SignedInt.getReverseInt(buff.get(pos)));
@@ -116,10 +125,6 @@ public class ACE {
         return flags;
     }
 
-    public int getSize() {
-        return size;
-    }
-
     public byte[] getApplicationData() {
         return applicationData;
     }
@@ -144,7 +149,17 @@ public class ACE {
         return sid;
     }
 
+    public int getSize() {
+        return 8 + (objectFlags == null ? 0 : 4)
+                + (objectType == null ? 0 : 16)
+                + (inheritedObjectType == null ? 0 : 16)
+                + sid.getSize()
+                + applicationData.length;
+    }
+
     public byte[] toByteArray() {
+        final int size = getSize();
+
         final ByteBuffer buff = ByteBuffer.allocate(size);
 
         // Add type byte
@@ -188,4 +203,70 @@ public class ACE {
 
         return buff.array();
     }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (!(o instanceof ACE)) {
+            return false;
+        }
+
+        final ACE ext = ACE.class.cast(o);
+
+        if (getSize() != ext.getSize()) {
+            log.debug("Different size");
+            return false;
+        }
+
+        if (getType() != ext.getType()) {
+            log.debug("Different type");
+            return false;
+        }
+
+        if (!Arrays.equals(getApplicationData(), ext.getApplicationData())) {
+            log.debug("Different application data");
+            return false;
+        }
+
+        if (!Arrays.equals(getObjectType(), ext.getObjectType())) {
+            log.debug("Different object type");
+            return false;
+        }
+
+        if (!Arrays.equals(getInheritedObjectType(), ext.getInheritedObjectType())) {
+            log.debug("Different inherited object type");
+            return false;
+        }
+
+        if (!getSid().equals(ext.getSid())) {
+            log.debug("Different SID");
+            return false;
+        }
+
+        if (getObjectFlags().asInt() != ext.getObjectFlags().asInt()) {
+            log.debug("Different object flags");
+            return false;
+        }
+
+        if (getRights().asInt() != ext.getRights().asInt()) {
+            log.debug("Different rights");
+            return false;
+        }
+
+        return new HashSet<>(getFlags()).equals(new HashSet<>(ext.getFlags()));
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 53 * hash + Objects.hashCode(this.type);
+        hash = 53 * hash + Objects.hashCode(this.flags);
+        hash = 53 * hash + Objects.hashCode(this.rights);
+        hash = 53 * hash + Objects.hashCode(this.objectFlags);
+        hash = 53 * hash + Arrays.hashCode(this.objectType);
+        hash = 53 * hash + Arrays.hashCode(this.inheritedObjectType);
+        hash = 53 * hash + Arrays.hashCode(this.applicationData);
+        hash = 53 * hash + Objects.hashCode(this.sid);
+        return hash;
+    }
+
 }

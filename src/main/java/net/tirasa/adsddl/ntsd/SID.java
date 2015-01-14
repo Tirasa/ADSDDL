@@ -18,14 +18,22 @@ package net.tirasa.adsddl.ntsd;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import net.tirasa.adsddl.ntsd.utils.Hex;
 import net.tirasa.adsddl.ntsd.utils.SignedInt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SID {
 
-    private byte revision;
+    /**
+     * Logger.
+     */
+    protected static final Logger log = LoggerFactory.getLogger(SID.class);
 
-    private int subAuthorityCount;
+    private byte revision;
 
     private byte[] identifierAuthority;
 
@@ -53,7 +61,7 @@ public class SID {
 
         //SubAuthorityCount (1 byte): An 8-bit unsigned integer that specifies the number of elements 
         //in the SubAuthority array. The maximum number of elements allowed is 15.
-        subAuthorityCount = SignedInt.getInt(sidHeader[1]);
+        int subAuthorityCount = SignedInt.getInt(sidHeader[1]);
         subAuthorities = new ArrayList<>(subAuthorityCount);
 
         // IdentifierAuthority (6 bytes): A SID_IDENTIFIER_AUTHORITY structure that indicates the 
@@ -71,7 +79,7 @@ public class SID {
         // SubAuthorityCount.
         for (int j = 0; j < subAuthorityCount; j++) {
             pos++;
-            subAuthorities.add(SignedInt.getBytes(buff.get(pos)));
+            subAuthorities.add(Hex.reverse(SignedInt.getBytes(buff.get(pos))));
         }
 
         return pos;
@@ -82,7 +90,7 @@ public class SID {
     }
 
     public int getSubAuthorityCount() {
-        return subAuthorityCount;
+        return subAuthorities.size();
     }
 
     public byte[] getIdentifierAuthority() {
@@ -93,14 +101,55 @@ public class SID {
         return subAuthorities;
     }
 
+    public int getSize() {
+        return 8 + subAuthorities.size() * 4;
+    }
+
     public byte[] toByteArray() {
-        final ByteBuffer buff = ByteBuffer.allocate(8 + subAuthorityCount * 4);
+        // variable content size depending on sub authorities number
+        final ByteBuffer buff = ByteBuffer.allocate(getSize());
         buff.put(revision);
-        buff.put(SignedInt.getBytes(subAuthorityCount)[3]);
+        buff.put(SignedInt.getBytes(subAuthorities.size())[3]);
         buff.put(identifierAuthority);
         for (byte[] sub : subAuthorities) {
-            buff.put(sub);
+            buff.put(Hex.reverse(sub));
         }
         return buff.array();
     }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (!(o instanceof SID)) {
+            return false;
+        }
+
+        final SID ext = SID.class.cast(o);
+
+        if (getSize() != ext.getSize()) {
+            log.debug("Different size");
+            return false;
+        }
+
+        if (getSubAuthorityCount() != ext.getSubAuthorityCount()) {
+            log.debug("Different sub authorities");
+            return false;
+        }
+
+        if (!Arrays.equals(getIdentifierAuthority(), ext.getIdentifierAuthority())) {
+            log.debug("Different identifier authority: {}-{}",
+                    Hex.get(identifierAuthority), Hex.get(ext.getIdentifierAuthority()));
+            return false;
+        }
+
+        return getSubAuthorities().equals(ext.getSubAuthorities());
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 97 * hash + Arrays.hashCode(this.identifierAuthority);
+        hash = 97 * hash + Objects.hashCode(this.subAuthorities);
+        return hash;
+    }
+
 }

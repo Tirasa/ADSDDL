@@ -17,14 +17,21 @@ package net.tirasa.adsddl.ntsd;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.Arrays;
+import java.util.Objects;
 import net.tirasa.adsddl.ntsd.utils.Hex;
 import net.tirasa.adsddl.ntsd.utils.SignedInt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SDDL {
 
-    private byte revision;
+    /**
+     * Logger.
+     */
+    protected static final Logger log = LoggerFactory.getLogger(SDDL.class);
 
-    private final int size;
+    private byte revision;
 
     private byte[] controlFlags;
 
@@ -45,8 +52,6 @@ public class SDDL {
     private ACL sacl;
 
     public SDDL(byte[] src) {
-        this.size = src.length;
-
         final ByteBuffer sddlBuffer = ByteBuffer.wrap(src);
         parse(sddlBuffer.asIntBuffer(), 0);
     }
@@ -176,7 +181,10 @@ public class SDDL {
     }
 
     public int getSize() {
-        return size;
+        return 20 + (sacl == null ? 0 : sacl.getSize())
+                + (dacl == null ? 0 : dacl.getSize())
+                + (owner == null ? 0 : owner.getSize())
+                + (group == null ? 0 : group.getSize());
     }
 
     public byte getRevision() {
@@ -204,7 +212,7 @@ public class SDDL {
     }
 
     public byte[] toByteArray() {
-        final ByteBuffer buff = ByteBuffer.allocate(size);
+        final ByteBuffer buff = ByteBuffer.allocate(getSize());
 
         // add revision
         buff.put(revision);
@@ -218,44 +226,107 @@ public class SDDL {
 
         // add offset owner
         buff.position(4);
-        buff.put(Hex.reverse(SignedInt.getBytes(offsetOwner)));
 
+        int nextAvailablePosition = 20;
         // add owner SID
-        if (owner != null) {
-            buff.position(offsetOwner);
+        if (owner == null) {
+            buff.put(SignedInt.getBytes(0));
+        } else {
+            buff.put(Hex.reverse(SignedInt.getBytes(nextAvailablePosition)));
+            buff.position(nextAvailablePosition);
             buff.put(owner.toByteArray());
+            nextAvailablePosition += 4;
         }
 
         // add offset group
         buff.position(8);
-        buff.put(Hex.reverse(SignedInt.getBytes(offsetGroup)));
 
         // add group SID
-        if (group != null) {
-            buff.position(offsetGroup);
+        if (group == null) {
+            buff.put(SignedInt.getBytes(0));
+        } else {
+            buff.put(Hex.reverse(SignedInt.getBytes(nextAvailablePosition)));
+            buff.position(nextAvailablePosition);
             buff.put(group.toByteArray());
+            nextAvailablePosition += 4;
         }
 
         // add offset sacl
         buff.position(12);
-        buff.put(Hex.reverse(SignedInt.getBytes(offsetSACL)));
 
         // add SACL
-        if (sacl != null) {
-            buff.position(offsetSACL);
+        if (sacl == null) {
+            buff.put(SignedInt.getBytes(0));
+        } else {
+            buff.put(Hex.reverse(SignedInt.getBytes(nextAvailablePosition)));
+            buff.position(nextAvailablePosition);
             buff.put(sacl.toByteArray());
+            nextAvailablePosition += sacl.getSize();
         }
 
         // add offset dacl
         buff.position(16);
-        buff.put(Hex.reverse(SignedInt.getBytes(offsetDACL)));
 
         // add DACL
-        if (dacl != null) {
-            buff.position(offsetDACL);
+        if (dacl == null) {
+            buff.put(SignedInt.getBytes(0));
+        } else {
+            buff.put(Hex.reverse(SignedInt.getBytes(nextAvailablePosition)));
+            buff.position(nextAvailablePosition);
             buff.put(dacl.toByteArray());
         }
 
         return buff.array();
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (!(o instanceof SDDL)) {
+            return false;
+        }
+
+        final SDDL ext = SDDL.class.cast(o);
+
+        if (getSize() != ext.getSize()) {
+            log.debug("Different size");
+            return false;
+        }
+
+        if (!Arrays.equals(getControlFlags(), ext.getControlFlags())) {
+            log.debug("Different control flags");
+            return false;
+        }
+
+        if (!getOwner().equals(ext.getOwner())) {
+            log.debug("Different owner");
+            return false;
+        }
+
+        if (!getGroup().equals(ext.getGroup())) {
+            log.debug("Different group");
+            return false;
+        }
+
+        if (!getDacl().equals(ext.getDacl())) {
+            log.debug("Different dacl");
+            return false;
+        }
+
+        if (!getSacl().equals(ext.getSacl())) {
+            log.debug("Different sacl");
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 71 * hash + Arrays.hashCode(this.controlFlags);
+        hash = 71 * hash + Objects.hashCode(this.owner);
+        hash = 71 * hash + Objects.hashCode(this.group);
+        hash = 71 * hash + Objects.hashCode(this.dacl);
+        hash = 71 * hash + Objects.hashCode(this.sacl);
+        return hash;
     }
 }
