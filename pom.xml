@@ -64,6 +64,7 @@ limitations under the License.
     <disruptor.version>3.3.0</disruptor.version>
     <commons.logging.version>1.2</commons.logging.version>
     <xml.apis.version>1.4.01</xml.apis.version>
+    <surfire.version>2.18.1</surfire.version>
   </properties>
 
   <dependencies>
@@ -114,7 +115,23 @@ limitations under the License.
   </dependencies>
   
   <build>
+    <defaultGoal>clean test</defaultGoal>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surfire.version}</version>
+        <configuration>
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          <encoding>utf-8</encoding>
+          <runOrder>alphabetical</runOrder>
+          <skipTests>false</skipTests>
+          <includes>
+            <include>**/unit/*Test.java</include>
+          </includes>
+        </configuration>
+      </plugin>
+          
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -124,27 +141,37 @@ limitations under the License.
           <target>1.7</target>
         </configuration>
       </plugin>
-      
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.3.2</version>
-        <executions>
-          <execution>
-            <phase>test</phase>
-            <goals>
-              <goal>java</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <killAfter>-1</killAfter>
-          <mainClass>net.tirasa.adsddl.Main</mainClass>
-        </configuration>
-      </plugin>
-      
     </plugins>
   </build>
+  
+  <profiles>
+    <profile>
+      <id>it</id>
+      
+      <build>
+        <defaultGoal>clean test</defaultGoal>
+
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>${surfire.version}</version>
+            <configuration>
+              <redirectTestOutputToFile>true</redirectTestOutputToFile>
+              <encoding>utf-8</encoding>
+              <runOrder>alphabetical</runOrder>
+              <skipTests>false</skipTests>
+              <includes>
+                <include>**/unit/*Test.java</include>
+                <include>**/it/*Test.java</include>
+              </includes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+      
+    </profile>
+  </profiles>
   
   <repositories>
     <repository>

@@ -15,15 +15,15 @@
  */
 package net.tirasa.adsddl.ntsd;
 
+import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.List;
 import net.tirasa.adsddl.ntsd.data.AceFlag;
-import net.tirasa.adsddl.ntsd.data.AceObjectFlag;
-import net.tirasa.adsddl.ntsd.data.AceRight;
+import net.tirasa.adsddl.ntsd.data.AceObjectFlags;
+import net.tirasa.adsddl.ntsd.data.AceRights;
 import net.tirasa.adsddl.ntsd.data.AceType;
 import net.tirasa.adsddl.ntsd.utils.Hex;
 import net.tirasa.adsddl.ntsd.utils.SignedInt;
-import net.tirasa.adsddl.ntsd.utils.Unit;
 
 public class ACE {
 
@@ -33,9 +33,9 @@ public class ACE {
 
     private int size;
 
-    private List<AceRight> rights;
+    private AceRights rights;
 
-    private List<AceObjectFlag> objectFlags;
+    private AceObjectFlags objectFlags;
 
     private byte[] objectType;
 
@@ -58,31 +58,31 @@ public class ACE {
     int parse(final IntBuffer buff, final int start) {
         int pos = start;
 
-        byte[] bytes = new Unit(buff.get(pos)).getBytes();
+        byte[] bytes = SignedInt.getBytes(buff.get(pos));
         type = AceType.parseValue(bytes[0]);
         flags = AceFlag.parseValue(bytes[1]);
         size = SignedInt.getInt(bytes[3], bytes[2]);
 
         pos++;
-        rights = AceRight.parseValue(buff.get(pos));
+        rights = AceRights.parseValue(SignedInt.getReverseInt(buff.get(pos)));
 
-        if (type == AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE) {
+        if (type == AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE || type == AceType.ACCESS_DENIED_OBJECT_ACE_TYPE) {
             pos++;
-            objectFlags = AceObjectFlag.parseValue(SignedInt.getInt(Hex.reverse(new Unit(buff.get(pos)).getBytes())));
+            objectFlags = AceObjectFlags.parseValue(SignedInt.getReverseInt(buff.get(pos)));
 
-            if (objectFlags.contains(AceObjectFlag.ACE_OBJECT_TYPE_PRESENT)) {
+            if (objectFlags.getFlags().contains(AceObjectFlags.Flag.ACE_OBJECT_TYPE_PRESENT)) {
                 objectType = new byte[16];
                 for (int j = 0; j < 4; j++) {
                     pos++;
-                    System.arraycopy(new Unit(buff.get(pos)).getBytes(), 0, objectType, j * 4, 4);
+                    System.arraycopy(SignedInt.getBytes(buff.get(pos)), 0, objectType, j * 4, 4);
                 }
             }
 
-            if (objectFlags.contains(AceObjectFlag.ACE_INHERITED_OBJECT_TYPE_PRESENT)) {
+            if (objectFlags.getFlags().contains(AceObjectFlags.Flag.ACE_INHERITED_OBJECT_TYPE_PRESENT)) {
                 inheritedObjectType = new byte[16];
                 for (int j = 0; j < 4; j++) {
                     pos++;
-                    System.arraycopy(new Unit(buff.get(pos)).getBytes(), 0, inheritedObjectType, j * 4, 4);
+                    System.arraycopy(SignedInt.getBytes(buff.get(pos)), 0, inheritedObjectType, j * 4, 4);
                 }
             }
         }
@@ -90,13 +90,14 @@ public class ACE {
         pos++;
         sid = new SID();
         pos = sid.parse(buff, pos);
+
         int lastPos = start + (size / 4) - 1;
         applicationData = new byte[4 * (lastPos - pos)];
 
         int index = 0;
         while (pos < lastPos) {
             pos++;
-            System.arraycopy(new Unit(buff.get(pos)).getBytes(), 0, applicationData, index, 4);
+            System.arraycopy(SignedInt.getBytes(buff.get(pos)), 0, applicationData, index, 4);
             index += 4;
         }
 
@@ -105,6 +106,10 @@ public class ACE {
 
     public AceType getType() {
         return type;
+    }
+
+    public void setType(AceType type) {
+        this.type = type;
     }
 
     public List<AceFlag> getFlags() {
@@ -119,11 +124,11 @@ public class ACE {
         return applicationData;
     }
 
-    public List<AceRight> getRights() {
+    public AceRights getRights() {
         return rights;
     }
 
-    public List<AceObjectFlag> getObjectFlags() {
+    public AceObjectFlags getObjectFlags() {
         return objectFlags;
     }
 
@@ -139,4 +144,48 @@ public class ACE {
         return sid;
     }
 
+    public byte[] toByteArray() {
+        final ByteBuffer buff = ByteBuffer.allocate(size);
+
+        // Add type byte
+        buff.put(type.getValue());
+
+        // add flags byte
+        byte flagSRC = 0x00;
+        for (AceFlag flag : flags) {
+            flagSRC |= flag.getValue();
+        }
+        buff.put(flagSRC);
+
+        // add size bytes (2 reversed)
+        byte[] sizeSRC = SignedInt.getBytes(size);
+        buff.put(sizeSRC[3]);
+        buff.put(sizeSRC[2]);
+
+        // add right mask
+        buff.put(Hex.reverse(SignedInt.getBytes(rights.asInt())));
+
+        // add object flags (from int to byte[] + reversed)
+        if (objectFlags != null) {
+            buff.put(Hex.reverse(SignedInt.getBytes(objectFlags.asInt())));
+        }
+
+        // add object type
+        if (objectType != null) {
+            buff.put(objectType);
+        }
+
+        // add inherited object type
+        if (inheritedObjectType != null) {
+            buff.put(inheritedObjectType);
+        }
+
+        // add sid
+        buff.put(sid.toByteArray());
+
+        // add application data
+        buff.put(applicationData);
+
+        return buff.array();
+    }
 }

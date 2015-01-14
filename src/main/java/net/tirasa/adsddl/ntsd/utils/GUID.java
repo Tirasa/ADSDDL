@@ -42,7 +42,7 @@ public class GUID {
         res.append(AddLeadingZero((int) GUID[14] & 0xFF));
         res.append(AddLeadingZero((int) GUID[15] & 0xFF));
 
-        return res.toString();
+        return res.toString().toUpperCase();
 
     }
 

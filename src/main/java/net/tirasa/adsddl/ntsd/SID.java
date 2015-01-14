@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.tirasa.adsddl.ntsd;
 
+import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import net.tirasa.adsddl.ntsd.utils.Unit;
+import net.tirasa.adsddl.ntsd.utils.SignedInt;
 
 public class SID {
 
     private byte revision;
 
-    private byte subAuthorityCount;
+    private int subAuthorityCount;
 
     private byte[] identifierAuthority;
 
@@ -45,15 +45,15 @@ public class SID {
         int pos = start;
 
         // Check for a SID (http://msdn.microsoft.com/en-us/library/cc230371.aspx)
-        final Unit sidHeader = new Unit(buff.get(pos));
+        final byte[] sidHeader = SignedInt.getBytes(buff.get(pos));
 
         // Revision(1 byte): An 8-bit unsigned integer that specifies the revision level of the SID.
         // This value MUST be set to 0x01.
-        revision = sidHeader.getBytes(0, 1)[0];
+        revision = sidHeader[0];
 
         //SubAuthorityCount (1 byte): An 8-bit unsigned integer that specifies the number of elements 
         //in the SubAuthority array. The maximum number of elements allowed is 15.
-        subAuthorityCount = sidHeader.getBytes(1, 2)[0];
+        subAuthorityCount = SignedInt.getInt(sidHeader[1]);
         subAuthorities = new ArrayList<>(subAuthorityCount);
 
         // IdentifierAuthority (6 bytes): A SID_IDENTIFIER_AUTHORITY structure that indicates the 
@@ -61,17 +61,17 @@ public class SID {
         // The Identifier Authority value {0,0,0,0,0,5} denotes SIDs created by the NT SID authority.
         identifierAuthority = new byte[6];
 
-        System.arraycopy(sidHeader.getBytes(2, 4), 0, identifierAuthority, 0, 2);
+        System.arraycopy(sidHeader, 2, identifierAuthority, 0, 2);
 
         pos++;
-        System.arraycopy(new Unit(buff.get(pos)).getBytes(), 0, identifierAuthority, 2, 4);
+        System.arraycopy(SignedInt.getBytes(buff.get(pos)), 0, identifierAuthority, 2, 4);
 
         // SubAuthority (variable): A variable length array of unsigned 32-bit integers that uniquely 
         // identifies a principal relative to the IdentifierAuthority. Its length is determined by 
         // SubAuthorityCount.
         for (int j = 0; j < subAuthorityCount; j++) {
             pos++;
-            subAuthorities.add(new Unit(buff.get(pos)).getBytes());
+            subAuthorities.add(SignedInt.getBytes(buff.get(pos)));
         }
 
         return pos;
@@ -81,7 +81,7 @@ public class SID {
         return revision;
     }
 
-    public byte getSubAuthorityCount() {
+    public int getSubAuthorityCount() {
         return subAuthorityCount;
     }
 
@@ -91,5 +91,16 @@ public class SID {
 
     public List<byte[]> getSubAuthorities() {
         return subAuthorities;
+    }
+
+    public byte[] toByteArray() {
+        final ByteBuffer buff = ByteBuffer.allocate(8 + subAuthorityCount * 4);
+        buff.put(revision);
+        buff.put(SignedInt.getBytes(subAuthorityCount)[3]);
+        buff.put(identifierAuthority);
+        for (byte[] sub : subAuthorities) {
+            buff.put(sub);
+        }
+        return buff.array();
     }
 }

@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.tirasa.adsddl.ntsd;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import net.tirasa.adsddl.ntsd.utils.Hex;
 import net.tirasa.adsddl.ntsd.utils.SignedInt;
-import net.tirasa.adsddl.ntsd.utils.Unit;
 
 public class SDDL {
 
     private byte revision;
+
+    private final int size;
 
     private byte[] controlFlags;
 
@@ -44,6 +45,8 @@ public class SDDL {
     private ACL sacl;
 
     public SDDL(byte[] src) {
+        this.size = src.length;
+
         final ByteBuffer sddlBuffer = ByteBuffer.wrap(src);
         parse(sddlBuffer.asIntBuffer(), 0);
     }
@@ -62,7 +65,7 @@ public class SDDL {
          * Revision (1 byte): An unsigned 8-bit value that specifies the revision of the SECURITY_DESCRIPTOR
          * structure. This field MUST be set to one.
          */
-        final byte[] header = new Unit(buff.get(pos)).getBytes();
+        final byte[] header = SignedInt.getBytes(buff.get(pos));
         revision = header[0];
 
         /**
@@ -79,7 +82,7 @@ public class SDDL {
          * offset if the OD flag is not set. If this field is set to zero, the OwnerSid field MUST not be present.
          */
         if (!controlFlag[15]) {
-            offsetOwner = SignedInt.getReverseInt(new Unit(buff.get(pos)).getBytes());
+            offsetOwner = SignedInt.getReverseInt(buff.get(pos));
         } else {
             offsetOwner = 0;
         }
@@ -92,7 +95,7 @@ public class SDDL {
          * offset if the GD flag is not set. If this field is set to zero, the GroupSid field MUST not be present.
          */
         if (!controlFlag[14]) {
-            offsetGroup = SignedInt.getReverseInt(new Unit(buff.get(pos)).getBytes());
+            offsetGroup = SignedInt.getReverseInt(buff.get(pos));
         } else {
             offsetGroup = 0;
         }
@@ -107,7 +110,7 @@ public class SDDL {
          * field MUST be set to zero. If this field is set to zero, the Sacl field MUST not be present.
          */
         if (controlFlag[11]) {
-            offsetSACL = SignedInt.getReverseInt(new Unit(buff.get(pos)).getBytes());
+            offsetSACL = SignedInt.getReverseInt(buff.get(pos));
         } else {
             offsetSACL = 0;
         }
@@ -121,7 +124,7 @@ public class SDDL {
          * zero. If this field is set to zero, the Dacl field MUST not be present.
          */
         if (controlFlag[13]) {
-            offsetDACL = SignedInt.getReverseInt(new Unit(buff.get(pos)).getBytes());
+            offsetDACL = SignedInt.getReverseInt(buff.get(pos));
         } else {
             offsetDACL = 0;
         }
@@ -172,28 +175,16 @@ public class SDDL {
         return pos;
     }
 
+    public int getSize() {
+        return size;
+    }
+
     public byte getRevision() {
         return revision;
     }
 
     public byte[] getControlFlags() {
         return controlFlags;
-    }
-
-    public int getOffsetOwner() {
-        return offsetOwner;
-    }
-
-    public int getOffsetGroup() {
-        return offsetGroup;
-    }
-
-    public int getOffsetSACL() {
-        return offsetSACL;
-    }
-
-    public int getOffsetDACL() {
-        return offsetDACL;
     }
 
     public SID getOwner() {
@@ -210,5 +201,61 @@ public class SDDL {
 
     public ACL getSacl() {
         return sacl;
+    }
+
+    public byte[] toByteArray() {
+        final ByteBuffer buff = ByteBuffer.allocate(size);
+
+        // add revision
+        buff.put(revision);
+
+        // add reserved
+        buff.put((byte) 0x00);
+
+        // add contro flags
+        buff.put(controlFlags[1]);
+        buff.put(controlFlags[0]);
+
+        // add offset owner
+        buff.position(4);
+        buff.put(Hex.reverse(SignedInt.getBytes(offsetOwner)));
+
+        // add owner SID
+        if (owner != null) {
+            buff.position(offsetOwner);
+            buff.put(owner.toByteArray());
+        }
+
+        // add offset group
+        buff.position(8);
+        buff.put(Hex.reverse(SignedInt.getBytes(offsetGroup)));
+
+        // add group SID
+        if (group != null) {
+            buff.position(offsetGroup);
+            buff.put(group.toByteArray());
+        }
+
+        // add offset sacl
+        buff.position(12);
+        buff.put(Hex.reverse(SignedInt.getBytes(offsetSACL)));
+
+        // add SACL
+        if (sacl != null) {
+            buff.position(offsetSACL);
+            buff.put(sacl.toByteArray());
+        }
+
+        // add offset dacl
+        buff.position(16);
+        buff.put(Hex.reverse(SignedInt.getBytes(offsetDACL)));
+
+        // add DACL
+        if (dacl != null) {
+            buff.position(offsetDACL);
+            buff.put(dacl.toByteArray());
+        }
+
+        return buff.array();
     }
 }

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.tirasa.adsddl.ntsd.utils;
 
 import java.nio.ByteBuffer;
@@ -62,6 +61,10 @@ public class SignedInt {
 
     public static int getReverseInt(final byte... bytes) {
         return getInt(Hex.reverse(bytes));
+    }
+
+    public static int getReverseInt(final int value) {
+        return getReverseInt(getBytes(value));
     }
 
     public static int getInt(final byte... bytes) {

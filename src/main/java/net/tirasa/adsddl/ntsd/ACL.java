@@ -13,23 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.tirasa.adsddl.ntsd;
 
+import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import net.tirasa.adsddl.ntsd.data.AclRevision;
 import net.tirasa.adsddl.ntsd.utils.SignedInt;
-import net.tirasa.adsddl.ntsd.utils.Unit;
 
 public class ACL {
 
     private AclRevision revision;
 
-    private byte[] size;
+    private int size;
 
-    private byte[] aceCount;
+    private int aceCount;
 
     private final List<ACE> aces = new ArrayList<>();
 
@@ -45,17 +44,16 @@ public class ACL {
      */
     int parse(final IntBuffer buff, final int start) {
         int pos = start;
-
         // read for Dacl
-        byte[] bytes = new Unit(buff.get(pos)).getBytes();
+        byte[] bytes = SignedInt.getBytes(buff.get(pos));
         revision = AclRevision.parseValue(bytes[0]);
-        size = new byte[] { bytes[3], bytes[2] };
+        size = SignedInt.getInt(bytes[3], bytes[2]);
 
         pos++;
-        bytes = new Unit(buff.get(pos)).getBytes();
-        aceCount = new byte[] { bytes[1], bytes[0] };
+        bytes = SignedInt.getBytes(buff.get(pos));
+        aceCount = SignedInt.getInt(bytes[1], bytes[0]);
 
-        for (int i = 0; i < SignedInt.getInt(aceCount); i++) {
+        for (int i = 0; i < aceCount; i++) {
             pos++;
 
             final ACE ace = new ACE();
@@ -71,11 +69,11 @@ public class ACL {
         return revision;
     }
 
-    public byte[] getSize() {
+    public int getSize() {
         return size;
     }
 
-    public byte[] getAceCount() {
+    public int getAceCount() {
         return aceCount;
     }
 
@@ -85,5 +83,36 @@ public class ACL {
 
     public ACE getAce(final int i) {
         return aces.get(i);
+    }
+
+    public byte[] toByteArray() {
+        final ByteBuffer buff = ByteBuffer.allocate(size);
+
+        // add revision
+        buff.put(revision.getValue());
+
+        // add reserved
+        buff.put((byte) 0x00);
+
+        // add size (2 bytes reversed)
+        byte[] sizeSRC = SignedInt.getBytes(size);
+        buff.put(sizeSRC[3]);
+        buff.put(sizeSRC[2]);
+
+        // add ace count (2 bytes reversed)
+        byte[] aceCountSRC = SignedInt.getBytes(aceCount);
+        buff.put(aceCountSRC[3]);
+        buff.put(aceCountSRC[2]);
+
+        // add reserved (2 bytes)
+        buff.put((byte) 0x00);
+        buff.put((byte) 0x00);
+
+        // add aces
+        for (ACE ace : aces) {
+            buff.put(ace.toByteArray());
+        }
+
+        return buff.array();
     }
 }
