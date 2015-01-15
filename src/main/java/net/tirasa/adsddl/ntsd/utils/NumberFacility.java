@@ -17,8 +17,13 @@ package net.tirasa.adsddl.ntsd.utils;
 
 import java.nio.ByteBuffer;
 import java.security.InvalidParameterException;
+import java.util.Arrays;
 
-public class SignedInt {
+public class NumberFacility {
+
+    public static byte[] getUIntBytes(final long value) {
+        return Arrays.copyOfRange(ByteBuffer.allocate(8).putLong(value).array(), 4, 8);
+    }
 
     public static byte[] getBytes(final int value) {
         return ByteBuffer.allocate(4).putInt(value).array();
@@ -51,60 +56,39 @@ public class SignedInt {
         return res;
     }
 
-    public static boolean[] getBits(final int value) {
-        final boolean[] res = new boolean[32];
-        for (int i = 0; i < 32; i++) {
-            res[31 - i] = (value & (1 << i)) != 0;
-        }
-        return res;
+    public static int getReverseInt(final byte... bytes) {
+        return (int) getReverseUInt(bytes);
     }
 
-    public static int getReverseInt(final byte... bytes) {
-        return getInt(Hex.reverse(bytes));
+    public static long getReverseUInt(final byte... bytes) {
+        return getUInt(Hex.reverse(bytes));
     }
 
     public static int getReverseInt(final int value) {
-        return getReverseInt(getBytes(value));
+        return (int) getReverseUInt(value);
+    }
+
+    public static long getReverseUInt(final int value) {
+        return getReverseUInt(getBytes(value));
     }
 
     public static int getInt(final byte... bytes) {
+        return (int) getUInt(bytes);
+    }
+
+    public static long getUInt(final byte... bytes) {
         if (bytes.length > 4) {
             throw new InvalidParameterException("Invalid number of bytes");
         }
 
-        return getInt(getBits(bytes));
-    }
-
-    public static int getInt(final boolean[] bits) {
-        if (bits.length > 32) {
-            throw new InvalidParameterException("Invalid number of bits");
-        }
-
-        final boolean[] toBeProcessed = new boolean[32];
-        System.arraycopy(bits, 0, toBeProcessed, 32 - bits.length, bits.length);
-
-        int res = 0;
-
-        int pow = 31;
-        for (boolean bit : toBeProcessed) {
-            if (bit) {
-                res += Math.pow(2, pow);
+        long res = 0;
+        for (int i = 0; i < bytes.length; i++) {
+            res |= bytes[i] & 0xFF;
+            if (i < bytes.length - 1) {
+                res <<= 8;
             }
-            pow--;
         }
 
         return res;
-    }
-
-    public static String toString(boolean[] bits) {
-        if (bits.length > 32) {
-            throw new InvalidParameterException("Invalid number of bits");
-        }
-
-        final StringBuilder builder = new StringBuilder(32);
-        for (boolean bit : bits) {
-            builder.append(bit ? 1 : 0);
-        }
-        return builder.toString();
     }
 }

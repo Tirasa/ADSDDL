@@ -73,6 +73,7 @@ limitations under the License.
       <groupId>com.sun.jndi.ldap</groupId>
       <artifactId>ldapbp</artifactId>
       <version>${ldapbp.version}</version>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -84,33 +85,25 @@ limitations under the License.
       <groupId>org.slf4j</groupId>
       <artifactId>jcl-over-slf4j</artifactId>
       <version>${slf4j.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-api</artifactId>
       <version>${log4j.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
       <version>${log4j.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
       <version>${log4j.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <version>${commons.logging.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>${commons.io.version}</version>
+      <scope>test</scope>
     </dependency>
 
     <dependency>

@@ -30,7 +30,7 @@ import net.tirasa.adsddl.ntsd.data.AceRights;
 import net.tirasa.adsddl.ntsd.data.AceType;
 import net.tirasa.adsddl.ntsd.utils.GUID;
 import net.tirasa.adsddl.ntsd.utils.Hex;
-import net.tirasa.adsddl.ntsd.utils.SignedInt;
+import net.tirasa.adsddl.ntsd.utils.NumberFacility;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
@@ -65,9 +65,10 @@ public abstract class AbstractTest {
 
         if (log.isDebugEnabled()) {
             printSDDL(sddl);
+            log.info(sddl.toString());
         }
 
-//        Assert.assertTrue(sddl.equals(new SDDL(sddl.toByteArray())));
+        Assert.assertTrue(sddl.equals(new SDDL(sddl.toByteArray())));
     }
 
     protected void UserChangePassword(final byte[] src) throws Exception {
@@ -75,6 +76,7 @@ public abstract class AbstractTest {
 
         if (log.isDebugEnabled()) {
             printSDDL(sddl);
+            log.info(sddl.toString());
         }
 
         Assert.assertTrue(Arrays.equals(src, sddl.toByteArray()));
@@ -98,6 +100,7 @@ public abstract class AbstractTest {
 
         if (log.isDebugEnabled()) {
             printSDDL(sddl);
+            log.info(sddl.toString());
         }
 
         Assert.assertTrue(Arrays.equals(src, sddl.toByteArray()));
@@ -123,7 +126,7 @@ public abstract class AbstractTest {
         log.debug("Revision: {}", Hex.get(sddl.getRevision()));
 
         log.debug("Control flags: ");
-        final boolean[] controlFlag = SignedInt.getBits(sddl.getControlFlags());
+        final boolean[] controlFlag = NumberFacility.getBits(sddl.getControlFlags());
 
         int count = 0;
         for (boolean flag : controlFlag) {
@@ -211,7 +214,7 @@ public abstract class AbstractTest {
         }
 
         if (ace.getRights().getOthers() != 0) {
-            log.debug(" - OTHERS({})", Hex.get(SignedInt.getBytes(ace.getRights().getOthers())));
+            log.debug(" - OTHERS({})", Hex.get(NumberFacility.getUIntBytes(ace.getRights().getOthers())));
         }
 
         if (ace.getType() == AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE

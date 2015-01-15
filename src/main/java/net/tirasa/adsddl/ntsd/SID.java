@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import net.tirasa.adsddl.ntsd.utils.Hex;
-import net.tirasa.adsddl.ntsd.utils.SignedInt;
+import net.tirasa.adsddl.ntsd.utils.NumberFacility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +37,17 @@ public class SID {
 
     private byte[] identifierAuthority;
 
-    private List<byte[]> subAuthorities;
+    private final List<byte[]> subAuthorities;
 
     SID() {
+        subAuthorities = new ArrayList<>();
+    }
+
+    public static SID newInstance(final byte[] identifier) {
+        final SID sid = new SID();
+        sid.setRevision((byte) 0x01);
+        sid.setIdentifierAuthority(identifier);
+        return sid;
     }
 
     /**
@@ -53,7 +61,7 @@ public class SID {
         int pos = start;
 
         // Check for a SID (http://msdn.microsoft.com/en-us/library/cc230371.aspx)
-        final byte[] sidHeader = SignedInt.getBytes(buff.get(pos));
+        final byte[] sidHeader = NumberFacility.getBytes(buff.get(pos));
 
         // Revision(1 byte): An 8-bit unsigned integer that specifies the revision level of the SID.
         // This value MUST be set to 0x01.
@@ -61,8 +69,7 @@ public class SID {
 
         //SubAuthorityCount (1 byte): An 8-bit unsigned integer that specifies the number of elements 
         //in the SubAuthority array. The maximum number of elements allowed is 15.
-        int subAuthorityCount = SignedInt.getInt(sidHeader[1]);
-        subAuthorities = new ArrayList<>(subAuthorityCount);
+        int subAuthorityCount = NumberFacility.getInt(sidHeader[1]);
 
         // IdentifierAuthority (6 bytes): A SID_IDENTIFIER_AUTHORITY structure that indicates the 
         // authority under which the SID was created. It describes the entity that created the SID. 
@@ -72,14 +79,14 @@ public class SID {
         System.arraycopy(sidHeader, 2, identifierAuthority, 0, 2);
 
         pos++;
-        System.arraycopy(SignedInt.getBytes(buff.get(pos)), 0, identifierAuthority, 2, 4);
+        System.arraycopy(NumberFacility.getBytes(buff.get(pos)), 0, identifierAuthority, 2, 4);
 
         // SubAuthority (variable): A variable length array of unsigned 32-bit integers that uniquely 
         // identifies a principal relative to the IdentifierAuthority. Its length is determined by 
         // SubAuthorityCount.
         for (int j = 0; j < subAuthorityCount; j++) {
             pos++;
-            subAuthorities.add(Hex.reverse(SignedInt.getBytes(buff.get(pos))));
+            subAuthorities.add(Hex.reverse(NumberFacility.getBytes(buff.get(pos))));
         }
 
         return pos;
@@ -105,16 +112,63 @@ public class SID {
         return 8 + subAuthorities.size() * 4;
     }
 
+    void setRevision(byte revision) {
+        this.revision = revision;
+    }
+
+    public SID setIdentifierAuthority(byte[] identifierAuthority) {
+        final ByteBuffer buff = ByteBuffer.allocate(6);
+
+        if (identifierAuthority != null) {
+            buff.position(6 - identifierAuthority.length);
+            buff.put(identifierAuthority);
+        }
+
+        this.identifierAuthority = buff.array();
+        return this;
+    }
+
+    public SID addSubAuthority(byte[] sub) {
+        if (sub != null) {
+            this.subAuthorities.add(sub);
+        }
+        return this;
+    }
+
     public byte[] toByteArray() {
         // variable content size depending on sub authorities number
         final ByteBuffer buff = ByteBuffer.allocate(getSize());
         buff.put(revision);
-        buff.put(SignedInt.getBytes(subAuthorities.size())[3]);
+        buff.put(NumberFacility.getBytes(subAuthorities.size())[3]);
         buff.put(identifierAuthority);
         for (byte[] sub : subAuthorities) {
             buff.put(Hex.reverse(sub));
         }
         return buff.array();
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder bld = new StringBuilder();
+        bld.append("S-1-");
+
+        if (identifierAuthority[0] == 0x00 && identifierAuthority[1] == 0x00) {
+            bld.append(NumberFacility.getInt(
+                    identifierAuthority[2], identifierAuthority[3], identifierAuthority[4], identifierAuthority[5]));
+        } else {
+            bld.append(Hex.get(identifierAuthority));
+        }
+
+        if (subAuthorities.isEmpty()) {
+            bld.append("-0");
+        } else {
+            for (byte[] sub : subAuthorities) {
+                bld.append("-");
+                bld.append(NumberFacility.getInt(sub));
+            }
+        }
+
+        return bld.toString();
     }
 
     @Override
@@ -141,7 +195,15 @@ public class SID {
             return false;
         }
 
-        return getSubAuthorities().equals(ext.getSubAuthorities());
+        for (int i = 0; i < subAuthorities.size(); i++) {
+            if (!Arrays.equals(subAuthorities.get(i), ext.getSubAuthorities().get(i))) {
+                log.debug("Different sub authority: {}-{}",
+                        Hex.get(subAuthorities.get(i)), Hex.get(ext.getSubAuthorities().get(i)));
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override

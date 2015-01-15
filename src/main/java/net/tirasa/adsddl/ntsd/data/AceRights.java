@@ -32,7 +32,8 @@ public class AceRights {
         WO(0x00080000),
         WD(0x00040000),
         RC(0x00020000),
-        SD(0x00010000);
+        SD(0x00010000),
+        CR(0x00000100);
 //        FA(0x001F01FF),
 //        FX(0x001200A0),
 //        FW(0x00100116),
@@ -41,7 +42,6 @@ public class AceRights {
 //        KR(0x0000003F),
 //        KX(0x00000019),
 //        KW(0x00000006),
-//        CR(0x00000100),
 //        LO(0x00000080),
 //        DT(0x00000040),
 //        WP(0x00000020),
@@ -62,11 +62,11 @@ public class AceRights {
         }
     }
 
-    private int others = 0;
+    private long others = 0l;
 
     private final List<AceRights.ObjectRight> rights = new ArrayList<>();
 
-    private AceRights() {
+    public AceRights() {
 
     }
 
@@ -88,16 +88,26 @@ public class AceRights {
         return res;
     }
 
-    public int getOthers() {
+    public long getOthers() {
         return others;
+    }
+
+    public AceRights setOthers(long others) {
+        this.others = others;
+        return this;
     }
 
     public List<ObjectRight> getObjectRights() {
         return rights;
     }
 
-    public int asInt() {
-        int res = others;
+    public AceRights addOjectRight(final ObjectRight right) {
+        rights.add(right);
+        return this;
+    }
+
+    public long asUInt() {
+        long res = others;
 
         for (ObjectRight right : rights) {
             res += right.getValue();

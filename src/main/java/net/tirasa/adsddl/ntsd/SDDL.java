@@ -20,7 +20,7 @@ import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.Objects;
 import net.tirasa.adsddl.ntsd.utils.Hex;
-import net.tirasa.adsddl.ntsd.utils.SignedInt;
+import net.tirasa.adsddl.ntsd.utils.NumberFacility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,13 +35,13 @@ public class SDDL {
 
     private byte[] controlFlags;
 
-    private int offsetOwner;
+    private long offsetOwner;
 
-    private int offsetGroup;
+    private long offsetGroup;
 
-    private int offsetSACL;
+    private long offsetSACL;
 
-    private int offsetDACL;
+    private long offsetDACL;
 
     private SID owner;
 
@@ -70,7 +70,7 @@ public class SDDL {
          * Revision (1 byte): An unsigned 8-bit value that specifies the revision of the SECURITY_DESCRIPTOR
          * structure. This field MUST be set to one.
          */
-        final byte[] header = SignedInt.getBytes(buff.get(pos));
+        final byte[] header = NumberFacility.getBytes(buff.get(pos));
         revision = header[0];
 
         /**
@@ -78,7 +78,7 @@ public class SDDL {
          * (SR) bit MUST be set when the security descriptor is in self-relative format.
          */
         controlFlags = new byte[] { header[3], header[2] };
-        final boolean[] controlFlag = SignedInt.getBits(controlFlags);
+        final boolean[] controlFlag = NumberFacility.getBits(controlFlags);
 
         pos++;
         /**
@@ -87,7 +87,7 @@ public class SDDL {
          * offset if the OD flag is not set. If this field is set to zero, the OwnerSid field MUST not be present.
          */
         if (!controlFlag[15]) {
-            offsetOwner = SignedInt.getReverseInt(buff.get(pos));
+            offsetOwner = NumberFacility.getReverseUInt(buff.get(pos));
         } else {
             offsetOwner = 0;
         }
@@ -100,7 +100,7 @@ public class SDDL {
          * offset if the GD flag is not set. If this field is set to zero, the GroupSid field MUST not be present.
          */
         if (!controlFlag[14]) {
-            offsetGroup = SignedInt.getReverseInt(buff.get(pos));
+            offsetGroup = NumberFacility.getReverseUInt(buff.get(pos));
         } else {
             offsetGroup = 0;
         }
@@ -115,7 +115,7 @@ public class SDDL {
          * field MUST be set to zero. If this field is set to zero, the Sacl field MUST not be present.
          */
         if (controlFlag[11]) {
-            offsetSACL = SignedInt.getReverseInt(buff.get(pos));
+            offsetSACL = NumberFacility.getReverseUInt(buff.get(pos));
         } else {
             offsetSACL = 0;
         }
@@ -129,7 +129,7 @@ public class SDDL {
          * zero. If this field is set to zero, the Dacl field MUST not be present.
          */
         if (controlFlag[13]) {
-            offsetDACL = SignedInt.getReverseInt(buff.get(pos));
+            offsetDACL = NumberFacility.getReverseUInt(buff.get(pos));
         } else {
             offsetDACL = 0;
         }
@@ -139,7 +139,7 @@ public class SDDL {
          * This field MUST be present if the OffsetOwner field is not zero.
          */
         if (offsetOwner > 0) {
-            pos = offsetOwner / 4;
+            pos = (int) (offsetOwner / 4);
             // read for OwnerSid
             owner = new SID();
             pos = owner.parse(buff, pos);
@@ -151,7 +151,7 @@ public class SDDL {
          */
         if (offsetGroup > 0) {
             // read for GroupSid
-            pos = offsetGroup / 4;
+            pos = (int) (offsetGroup / 4);
             group = new SID();
             pos = group.parse(buff, pos);
         }
@@ -162,7 +162,7 @@ public class SDDL {
          */
         if (offsetSACL > 0) {
             // read for Sacl
-            pos = offsetSACL / 4;
+            pos = (int) (offsetSACL / 4);
             sacl = new ACL();
             pos = sacl.parse(buff, pos);
         }
@@ -172,7 +172,7 @@ public class SDDL {
          * be present if the DP flag is set.
          */
         if (offsetDACL > 0) {
-            pos = offsetDACL / 4;
+            pos = (int) (offsetDACL / 4);
             dacl = new ACL();
             pos = dacl.parse(buff, pos);
         }
@@ -230,12 +230,12 @@ public class SDDL {
         int nextAvailablePosition = 20;
         // add owner SID
         if (owner == null) {
-            buff.put(SignedInt.getBytes(0));
+            buff.putInt(0);
         } else {
-            buff.put(Hex.reverse(SignedInt.getBytes(nextAvailablePosition)));
+            buff.put(Hex.reverse(NumberFacility.getBytes(nextAvailablePosition)));
             buff.position(nextAvailablePosition);
             buff.put(owner.toByteArray());
-            nextAvailablePosition += 4;
+            nextAvailablePosition += owner.getSize();
         }
 
         // add offset group
@@ -243,12 +243,12 @@ public class SDDL {
 
         // add group SID
         if (group == null) {
-            buff.put(SignedInt.getBytes(0));
+            buff.putInt(0);
         } else {
-            buff.put(Hex.reverse(SignedInt.getBytes(nextAvailablePosition)));
+            buff.put(Hex.reverse(NumberFacility.getBytes(nextAvailablePosition)));
             buff.position(nextAvailablePosition);
             buff.put(group.toByteArray());
-            nextAvailablePosition += 4;
+            nextAvailablePosition += group.getSize();
         }
 
         // add offset sacl
@@ -256,9 +256,9 @@ public class SDDL {
 
         // add SACL
         if (sacl == null) {
-            buff.put(SignedInt.getBytes(0));
+            buff.putInt(0);
         } else {
-            buff.put(Hex.reverse(SignedInt.getBytes(nextAvailablePosition)));
+            buff.put(Hex.reverse(NumberFacility.getBytes(nextAvailablePosition)));
             buff.position(nextAvailablePosition);
             buff.put(sacl.toByteArray());
             nextAvailablePosition += sacl.getSize();
@@ -269,9 +269,9 @@ public class SDDL {
 
         // add DACL
         if (dacl == null) {
-            buff.put(SignedInt.getBytes(0));
+            buff.putInt(0);
         } else {
-            buff.put(Hex.reverse(SignedInt.getBytes(nextAvailablePosition)));
+            buff.put(Hex.reverse(NumberFacility.getBytes(nextAvailablePosition)));
             buff.position(nextAvailablePosition);
             buff.put(dacl.toByteArray());
         }
@@ -298,12 +298,14 @@ public class SDDL {
         }
 
         if (!getOwner().equals(ext.getOwner())) {
-            log.debug("Different owner");
+            log.debug("Different owner ....\nEspected; {}\nActual: {}",
+                    getOwner().toString(), ext.getOwner().toString());
             return false;
         }
 
         if (!getGroup().equals(ext.getGroup())) {
-            log.debug("Different group");
+            log.debug("Different group ....\nEspected; {}\nActual: {}",
+                    getGroup().toString(), ext.getGroup().toString());
             return false;
         }
 
@@ -317,6 +319,32 @@ public class SDDL {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder bld = new StringBuilder();
+
+        if (owner != null) {
+            bld.append("O:");
+            bld.append(owner.toString());
+        }
+        if (group != null) {
+            bld.append("G:");
+            bld.append(group.toString());
+        }
+
+        if (dacl != null) {
+            bld.append("D:");
+            bld.append(dacl.toString());
+        }
+
+        if (sacl != null) {
+            bld.append("S:");
+            bld.append(sacl.toString());
+        }
+
+        return bld.toString();
     }
 
     @Override

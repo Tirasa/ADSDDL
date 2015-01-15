@@ -40,8 +40,12 @@ public class AceObjectFlags {
 
     private int others = 0;
 
-    private AceObjectFlags() {
-
+    public AceObjectFlags(final Flag... fls) {
+        for (Flag flag : fls) {
+            if (!flags.contains(flag)) {
+                flags.add(flag);
+            }
+        }
     }
 
     public static AceObjectFlags parseValue(final int value) {
@@ -63,12 +67,24 @@ public class AceObjectFlags {
         return flags;
     }
 
-    public int getOthers() {
+    public AceObjectFlags addFlag(final Flag flag) {
+        if (!flags.contains(flag)) {
+            flags.add(flag);
+        }
+        return this;
+    }
+
+    public long getOthers() {
         return others;
     }
 
-    public int asInt() {
-        int res = others;
+    public AceObjectFlags setOthers(int others) {
+        this.others = others;
+        return this;
+    }
+
+    public long asUInt() {
+        long res = others;
 
         for (AceObjectFlags.Flag flag : flags) {
             res += flag.getValue();

@@ -18,11 +18,10 @@ package net.tirasa.adsddl.ntsd;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import net.tirasa.adsddl.ntsd.data.AclRevision;
-import net.tirasa.adsddl.ntsd.utils.SignedInt;
+import net.tirasa.adsddl.ntsd.utils.NumberFacility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +33,6 @@ public class ACL {
     protected static final Logger log = LoggerFactory.getLogger(ACL.class);
 
     private AclRevision revision;
-
-    private int aceCount;
 
     private final List<ACE> aces = new ArrayList<>();
 
@@ -52,12 +49,12 @@ public class ACL {
     int parse(final IntBuffer buff, final int start) {
         int pos = start;
         // read for Dacl
-        byte[] bytes = SignedInt.getBytes(buff.get(pos));
+        byte[] bytes = NumberFacility.getBytes(buff.get(pos));
         revision = AclRevision.parseValue(bytes[0]);
 
         pos++;
-        bytes = SignedInt.getBytes(buff.get(pos));
-        aceCount = SignedInt.getInt(bytes[1], bytes[0]);
+        bytes = NumberFacility.getBytes(buff.get(pos));
+        final int aceCount = NumberFacility.getInt(bytes[1], bytes[0]);
 
         for (int i = 0; i < aceCount; i++) {
             pos++;
@@ -87,7 +84,7 @@ public class ACL {
     }
 
     public int getAceCount() {
-        return aceCount;
+        return aces.size();
     }
 
     public List<ACE> getAces() {
@@ -111,12 +108,12 @@ public class ACL {
         buff.put((byte) 0x00);
 
         // add size (2 bytes reversed)
-        byte[] sizeSRC = SignedInt.getBytes(size);
+        byte[] sizeSRC = NumberFacility.getBytes(size);
         buff.put(sizeSRC[3]);
         buff.put(sizeSRC[2]);
 
         // add ace count (2 bytes reversed)
-        byte[] aceCountSRC = SignedInt.getBytes(aceCount);
+        byte[] aceCountSRC = NumberFacility.getBytes(getAceCount());
         buff.put(aceCountSRC[3]);
         buff.put(aceCountSRC[2]);
 
@@ -150,13 +147,31 @@ public class ACL {
             return false;
         }
 
-        return new HashSet<>(getAces()).equals(new HashSet<>(ext.getAces()));
+        for (int i = 0; i < aces.size(); i++) {
+            if (!getAce(i).equals(ext.getAce(i))) {
+                log.debug("Different ace: {}-{}", getAce(i), ext.getAce(i));
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder bld = new StringBuilder();
+        bld.append('P');
+
+        for (ACE ace : aces) {
+            bld.append(ace.toString());
+        }
+
+        return bld.toString();
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 43 * hash + this.aceCount;
         hash = 43 * hash + Objects.hashCode(this.aces);
         return hash;
     }

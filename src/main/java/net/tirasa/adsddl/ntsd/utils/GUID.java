@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.tirasa.adsddl.ntsd.utils;
+
+import java.nio.ByteBuffer;
+import java.util.UUID;
 
 public class GUID {
 
@@ -44,6 +46,34 @@ public class GUID {
 
         return res.toString().toUpperCase();
 
+    }
+
+    public static byte[] getGuidAsByteArray(final String GUID) {
+        final UUID uuid = UUID.fromString(GUID.toLowerCase());
+
+        final ByteBuffer buff = ByteBuffer.wrap(new byte[16]);
+        buff.putLong(uuid.getMostSignificantBits());
+        buff.putLong(uuid.getLeastSignificantBits());
+
+        byte[] res = new byte[] {
+            buff.get(3),
+            buff.get(2),
+            buff.get(1),
+            buff.get(0),
+            buff.get(5),
+            buff.get(4),
+            buff.get(7),
+            buff.get(6),
+            buff.get(8),
+            buff.get(9),
+            buff.get(10),
+            buff.get(11),
+            buff.get(12),
+            buff.get(13),
+            buff.get(14),
+            buff.get(15), };
+
+        return res;
     }
 
     private static String AddLeadingZero(int k) {
