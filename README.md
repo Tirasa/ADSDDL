@@ -1,5 +1,5 @@
 # ADSDDL
-Active Directory ntSecurityDescriptor sample parser
+Active Directory ntSecurityDescriptor simple parser
 
 ### How to use it
 
