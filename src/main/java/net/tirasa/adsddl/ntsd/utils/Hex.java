@@ -32,6 +32,14 @@ public class Hex {
         }
         return bld.toString();
     }
+    
+    public static String getEscaped(byte... bytes) {
+        final StringBuilder bld = new StringBuilder();
+        for (byte b : bytes) {
+            bld.append("\\").append(Hex.get(b));
+        }
+        return bld.toString();
+    }
 
     public static String get(byte b) {
         return String.format("%02X", b);
