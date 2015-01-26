@@ -50,6 +50,13 @@ public class SID {
         return sid;
     }
 
+    public static SID parse(final byte[] src) {
+        final ByteBuffer sddlBuffer = ByteBuffer.wrap(src);
+        final SID sid = new SID();
+        sid.parse(sddlBuffer.asIntBuffer(), 0);
+        return sid;
+    }
+
     /**
      * Load the SID from the buffer returning the last SID segment position into the buffer.
      *
@@ -153,7 +160,7 @@ public class SID {
         bld.append("S-1-");
 
         if (identifierAuthority[0] == 0x00 && identifierAuthority[1] == 0x00) {
-            bld.append(NumberFacility.getInt(
+            bld.append(NumberFacility.getUInt(
                     identifierAuthority[2], identifierAuthority[3], identifierAuthority[4], identifierAuthority[5]));
         } else {
             bld.append(Hex.get(identifierAuthority));
@@ -164,7 +171,7 @@ public class SID {
         } else {
             for (byte[] sub : subAuthorities) {
                 bld.append("-");
-                bld.append(NumberFacility.getInt(sub));
+                bld.append(NumberFacility.getUInt(sub));
             }
         }
 

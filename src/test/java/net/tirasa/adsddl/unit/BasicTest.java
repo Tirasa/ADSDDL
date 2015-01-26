@@ -16,10 +16,12 @@
 package net.tirasa.adsddl.unit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import net.tirasa.adsddl.ntsd.utils.GUID;
+import net.tirasa.adsddl.ntsd.utils.NumberFacility;
 import org.junit.Test;
 
 public class BasicTest {
@@ -46,5 +48,33 @@ public class BasicTest {
     public void guid() {
         assertTrue(Arrays.equals(GUID.getGuidAsByteArray(AbstractTest.UCP_OBJECT_GUID), guid));
         assertEquals(AbstractTest.UCP_OBJECT_GUID, GUID.getGuidAsString(guid));
+    }
+
+    @Test
+    public void checkInt() {
+        // check for max int
+        byte[] max = NumberFacility.getBytes(Integer.MAX_VALUE);
+        long value = NumberFacility.getUInt(max);
+        assertEquals((long) Integer.MAX_VALUE, value, 0);
+        assertTrue(Arrays.equals(max, NumberFacility.getUIntBytes(value)));
+        assertEquals(Integer.MAX_VALUE, NumberFacility.getInt(max));
+
+        // check for max int + 1
+        max = NumberFacility.getUIntBytes(Integer.MAX_VALUE + 1);
+        value = NumberFacility.getUInt(max);
+        assertEquals((long) Integer.MAX_VALUE + 1, value, 0);
+        assertTrue(NumberFacility.getInt(max) < 0);
+        assertTrue(Arrays.equals(max, NumberFacility.getUIntBytes(value)));
+        assertNotEquals((long) Integer.MAX_VALUE + 1, NumberFacility.getInt(max), 0);
+        assertEquals(Integer.MAX_VALUE + 1, NumberFacility.getInt(max), 0);
+
+        for (long i = 1; i < Integer.MAX_VALUE;) {
+            assertEquals(i, NumberFacility.getInt(NumberFacility.getBytes((int) i)), 0);
+
+            final long l = i * 2l;
+            assertEquals(l, NumberFacility.getUInt(NumberFacility.getUIntBytes(l)), 0);
+
+            i += 98765;
+        }
     }
 }
