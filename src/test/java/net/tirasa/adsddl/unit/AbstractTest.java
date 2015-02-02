@@ -31,6 +31,7 @@ import net.tirasa.adsddl.ntsd.data.AceType;
 import net.tirasa.adsddl.ntsd.utils.GUID;
 import net.tirasa.adsddl.ntsd.utils.Hex;
 import net.tirasa.adsddl.ntsd.utils.NumberFacility;
+import net.tirasa.adsddl.ntsd.utils.SDDLHelper;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
@@ -44,8 +45,6 @@ public abstract class AbstractTest {
      * Logger.
      */
     protected static final Logger log = LoggerFactory.getLogger(AbstractTest.class);
-
-    protected static final String UCP_OBJECT_GUID = "AB721A53-1E2F-11D0-9819-00AA0040529B";
 
     protected static final String SDDL_ALL_SAMPLE = "/sddlSample.bin";
 
@@ -87,7 +86,7 @@ public abstract class AbstractTest {
             if ((ace.getType() == AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE
                     || ace.getType() == AceType.ACCESS_DENIED_OBJECT_ACE_TYPE)
                     && ace.getObjectFlags().getFlags().contains(AceObjectFlags.Flag.ACE_OBJECT_TYPE_PRESENT)) {
-                if (GUID.getGuidAsString(ace.getObjectType()).equals(UCP_OBJECT_GUID)) {
+                if (GUID.getGuidAsString(ace.getObjectType()).equals(SDDLHelper.UCP_OBJECT_GUID)) {
                     found = true;
                 }
             }
@@ -109,7 +108,7 @@ public abstract class AbstractTest {
             if ((ace.getType() == AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE
                     || ace.getType() == AceType.ACCESS_DENIED_OBJECT_ACE_TYPE)
                     && ace.getObjectFlags().getFlags().contains(AceObjectFlags.Flag.ACE_OBJECT_TYPE_PRESENT)) {
-                if (GUID.getGuidAsString(ace.getObjectType()).equals(UCP_OBJECT_GUID)) {
+                if (GUID.getGuidAsString(ace.getObjectType()).equals(SDDLHelper.UCP_OBJECT_GUID)) {
                     if (ace.getType() == AceType.ACCESS_DENIED_OBJECT_ACE_TYPE) {
                         ace.setType(AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE);
                     } else {

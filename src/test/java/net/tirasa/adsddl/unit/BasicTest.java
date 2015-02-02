@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import net.tirasa.adsddl.ntsd.utils.GUID;
 import net.tirasa.adsddl.ntsd.utils.NumberFacility;
+import net.tirasa.adsddl.ntsd.utils.SDDLHelper;
 import org.junit.Test;
 
 public class BasicTest {
@@ -46,8 +47,8 @@ public class BasicTest {
 
     @Test
     public void guid() {
-        assertTrue(Arrays.equals(GUID.getGuidAsByteArray(AbstractTest.UCP_OBJECT_GUID), guid));
-        assertEquals(AbstractTest.UCP_OBJECT_GUID, GUID.getGuidAsString(guid));
+        assertTrue(Arrays.equals(GUID.getGuidAsByteArray(SDDLHelper.UCP_OBJECT_GUID), guid));
+        assertEquals(SDDLHelper.UCP_OBJECT_GUID, GUID.getGuidAsString(guid));
     }
 
     @Test

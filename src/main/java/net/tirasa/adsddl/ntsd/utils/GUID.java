@@ -44,12 +44,12 @@ public class GUID {
         res.append(AddLeadingZero((int) GUID[14] & 0xFF));
         res.append(AddLeadingZero((int) GUID[15] & 0xFF));
 
-        return res.toString().toUpperCase();
+        return res.toString();
 
     }
 
     public static byte[] getGuidAsByteArray(final String GUID) {
-        final UUID uuid = UUID.fromString(GUID.toLowerCase());
+        final UUID uuid = UUID.fromString(GUID);
 
         final ByteBuffer buff = ByteBuffer.wrap(new byte[16]);
         buff.putLong(uuid.getMostSignificantBits());

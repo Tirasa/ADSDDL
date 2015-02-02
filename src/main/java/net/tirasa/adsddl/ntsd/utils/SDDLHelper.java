@@ -26,7 +26,7 @@ import net.tirasa.adsddl.ntsd.data.AceType;
 
 public class SDDLHelper {
 
-    private static final String UCP_OBJECT_GUID = "AB721A53-1E2F-11D0-9819-00AA0040529B";
+    public static final String UCP_OBJECT_GUID = "ab721a53-1e2f-11d0-9819-00aa0040529b";
 
     public static boolean isUserCannotChangePassword(final SDDL sddl) {
         boolean res = false;
