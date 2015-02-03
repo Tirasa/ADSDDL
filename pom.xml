@@ -153,6 +153,7 @@
             <exclude>.externalToolBuilders/**</exclude>
             <exclude>.git/**</exclude>
             <exclude>.idea/**</exclude>
+            <exclude>**/*.in</exclude>
             <exclude>**/.*</exclude>
           </excludes>
         </configuration>
