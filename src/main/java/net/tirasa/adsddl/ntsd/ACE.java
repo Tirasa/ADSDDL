@@ -32,6 +32,10 @@ import net.tirasa.adsddl.ntsd.utils.NumberFacility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * An access control entry (ACE) is used to encode the user rights afforded to a principal, either a user or group. This
+ * is generally done by combining an ACCESS_MASK and the SID of the principal.
+ */
 public class ACE {
 
     /**
@@ -39,12 +43,24 @@ public class ACE {
      */
     protected static final Logger log = LoggerFactory.getLogger(ACE.class);
 
+    /**
+     * @see AceType.
+     */
     private AceType type;
 
+    /**
+     * @see AceFlag.
+     */
     private List<AceFlag> flags;
 
+    /**
+     * @see AceRights.
+     */
     private AceRights rights;
 
+    /**
+     * @see AceObjectFlags.
+     */
     private AceObjectFlags objectFlags;
 
     private byte[] objectType;
@@ -55,9 +71,17 @@ public class ACE {
 
     private SID sid;
 
+    /**
+     * Default constructor.
+     */
     ACE() {
     }
 
+    /**
+     * Creates a new ACE instance.
+     * @param type ACE type.
+     * @return ACE.
+     */
     public static ACE newInstance(final AceType type) {
         final ACE ace = new ACE();
         ace.setType(type);

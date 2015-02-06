@@ -15,28 +15,94 @@
  */
 package net.tirasa.adsddl.ntsd.data;
 
+/**
+ * An unsigned 8-bit integer that specifies the ACE types (https://msdn.microsoft.com/en-us/library/cc230296.aspx).
+ */
 public enum AceType {
 
-    UNEXPECTED((byte)0xFF),
+    /**
+     * Unexpected value.
+     */
+    UNEXPECTED((byte) 0xFF),
+    /**
+     * 0x00 - Access-allowed ACE that uses the ACCESS_ALLOWED_ACE structure.
+     */
     ACCESS_ALLOWED_ACE_TYPE((byte) 0x00),
+    /**
+     * 0x01 - Access-denied ACE that uses the ACCESS_DENIED_ACE structure.
+     */
     ACCESS_DENIED_ACE_TYPE((byte) 0x01),
+    /**
+     * 0x02 - System-audit ACE that uses the SYSTEM_AUDIT_ACE structure.
+     */
     SYSTEM_AUDIT_ACE_TYPE((byte) 0x02),
+    /**
+     * 0x03 - Reserved for future use.
+     */
     SYSTEM_ALARM_ACE_TYPE((byte) 0x03),
+    /**
+     * 0x04 - Reserved for future use.
+     */
     ACCESS_ALLOWED_COMPOUND_ACE_TYPE((byte) 0x04),
+    /**
+     * 0x05 - Object-specific access-allowed ACE that uses the ACCESS_ALLOWED_OBJECT_ACE structure.
+     */
     ACCESS_ALLOWED_OBJECT_ACE_TYPE((byte) 0x05),
+    /**
+     * 0x06 - Object-specific access-denied ACE that uses the ACCESS_DENIED_OBJECT_ACE structure.
+     */
     ACCESS_DENIED_OBJECT_ACE_TYPE((byte) 0x06),
+    /**
+     * 0x07 - Object-specific system-audit ACE that uses the SYSTEM_AUDIT_OBJECT_ACE structure.
+     */
     SYSTEM_AUDIT_OBJECT_ACE_TYPE((byte) 0x07),
+    /**
+     * 0x09 - Reserved for future use.
+     */
     SYSTEM_ALARM_OBJECT_ACE_TYPE((byte) 0x08),
+    /**
+     * 0x09 - Access-allowed callback ACE that uses the ACCESS_ALLOWED_CALLBACK_ACE structure.
+     */
     ACCESS_ALLOWED_CALLBACK_ACE_TYPE((byte) 0x09),
+    /**
+     * 0x0A - Access-denied callback ACE that uses the ACCESS_DENIED_CALLBACK_ACE structure.
+     */
     ACCESS_DENIED_CALLBACK_ACE_TYPE((byte) 0x0A),
+    /**
+     * 0x0B - Object-specific access-allowed callback ACE that uses the ACCESS_ALLOWED_CALLBACK_OBJECT_ACE structure.
+     */
     ACCESS_ALLOWED_CALLBACK_OBJECT_ACE_TYPE((byte) 0x0B),
+    /**
+     * 0x0C - Object-specific access-denied callback ACE that uses the ACCESS_DENIED_CALLBACK_OBJECT_ACE structure.
+     */
     ACCESS_DENIED_CALLBACK_OBJECT_ACE_TYPE((byte) 0x0C),
+    /**
+     * 0x0D - System-audit callback ACE that uses the SYSTEM_AUDIT_CALLBACK_ACE structure.
+     */
     SYSTEM_AUDIT_CALLBACK_ACE_TYPE((byte) 0x0D),
+    /**
+     * 0x0E - Reserved for future use.
+     */
     SYSTEM_ALARM_CALLBACK_ACE_TYPE((byte) 0x0E),
+    /**
+     * 0x0F - Object-specific system-audit callback ACE that uses the SYSTEM_AUDIT_CALLBACK_OBJECT_ACE structure.
+     */
     SYSTEM_AUDIT_CALLBACK_OBJECT_ACE_TYPE((byte) 0x0F),
+    /**
+     * 0x10 - Reserved for future use.
+     */
     SYSTEM_ALARM_CALLBACK_OBJECT_ACE_TYPE((byte) 0x10),
+    /**
+     * 0x11 - Mandatory label ACE that uses the SYSTEM_MANDATORY_LABEL_ACE structure.
+     */
     SYSTEM_MANDATORY_LABEL_ACE_TYPE((byte) 0x11),
+    /**
+     * 0x12 - Resource attribute ACE that uses the SYSTEM_RESOURCE_ATTRIBUTE_ACE.
+     */
     SYSTEM_RESOURCE_ATTRIBUTE_ACE_TYPE((byte) 0x12),
+    /**
+     * 0x13 - A central policy ID ACE that uses the SYSTEM_SCOPED_POLICY_ID_ACE.
+     */
     SYSTEM_SCOPED_POLICY_ID_ACE_TYPE((byte) 0x13);
 
     private final byte value;
@@ -45,10 +111,19 @@ public enum AceType {
         this.value = value;
     }
 
+    /**
+     * Gets byte value.
+     * @return byte value.
+     */
     public byte getValue() {
         return value;
     }
 
+    /**
+     * Parses byte value.
+     * @param value byte value.
+     * @return ACE type.
+     */
     public static AceType parseValue(final byte value) {
         for (AceType type : AceType.values()) {
             if (type.getValue() == value) {
