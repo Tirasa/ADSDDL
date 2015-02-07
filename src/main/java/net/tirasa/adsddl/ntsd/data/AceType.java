@@ -16,7 +16,9 @@
 package net.tirasa.adsddl.ntsd.data;
 
 /**
- * An unsigned 8-bit integer that specifies the ACE types (https://msdn.microsoft.com/en-us/library/cc230296.aspx).
+ * An unsigned 8-bit integer that specifies the ACE types.
+ *
+ * @see https://msdn.microsoft.com/en-us/library/cc230296.aspx.
  */
 public enum AceType {
 
@@ -107,12 +109,17 @@ public enum AceType {
 
     private final byte value;
 
+    /**
+     * Private constructor.
+     * @param value byte value.
+     */
     private AceType(byte value) {
         this.value = value;
     }
 
     /**
      * Gets byte value.
+     *
      * @return byte value.
      */
     public byte getValue() {
@@ -121,6 +128,7 @@ public enum AceType {
 
     /**
      * Parses byte value.
+     *
      * @param value byte value.
      * @return ACE type.
      */

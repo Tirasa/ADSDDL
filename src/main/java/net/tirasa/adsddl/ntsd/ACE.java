@@ -79,6 +79,7 @@ public class ACE {
 
     /**
      * Creates a new ACE instance.
+     *
      * @param type ACE type.
      * @return ACE.
      */
@@ -145,38 +146,121 @@ public class ACE {
         return pos;
     }
 
+    /**
+     * Gets ACE type.
+     *
+     * @see AceType.
+     * @return ACE type.
+     */
     public AceType getType() {
         return type;
     }
 
+    /**
+     * Gets ACE flags.
+     *
+     * @see AceFlag.
+     * @return ACE flags; empty list if no flag has been specified.
+     */
     public List<AceFlag> getFlags() {
         return this.flags == null ? new ArrayList<AceFlag>() : this.flags;
     }
 
+    /**
+     * Optional application data. The size of the application data is determined by the AceSize field.
+     *
+     * @return application data; null if not available.
+     */
     public byte[] getApplicationData() {
-        return this.applicationData == null ? new byte[0] : this.applicationData;
+        return this.applicationData == null || this.applicationData.length == 0
+                ? null
+                : Arrays.copyOf(this.applicationData, this.applicationData.length);
     }
 
+    /**
+     * Sets application data.
+     *
+     * @param applicationData application data.
+     */
+    public void setApplicationData(final byte[] applicationData) {
+        this.applicationData = applicationData == null || applicationData.length == 0
+                ? null
+                : Arrays.copyOf(applicationData, applicationData.length);
+    }
+
+    /**
+     * An ACCESS_MASK that specifies the user rights allowed by this ACE.
+     *
+     * @see AceRights.
+     * @return ACE rights.
+     */
     public AceRights getRights() {
         return rights;
     }
 
+    /**
+     * A 32-bit unsigned integer that specifies a set of bit flags that indicate whether the ObjectType and
+     * InheritedObjectType fields contain valid data. This parameter can be one or more of the following values.
+     *
+     * @see AceObjectFlags.
+     *
+     * @return Flags.
+     */
     public AceObjectFlags getObjectFlags() {
         return objectFlags;
     }
 
+    /**
+     * A GUID (16 bytes) that identifies a property set, property, extended right, or type of child object. The purpose
+     * of this GUID depends on the user rights specified in the Mask field. This field is valid only if the ACE
+     * _OBJECT_TYPE_PRESENT bit is set in the Flags field. Otherwise, the ObjectType field is ignored. For information
+     * on access rights and for a mapping of the control access rights to the corresponding GUID value that identifies
+     * each right, see [MS-ADTS] sections 5.1.3.2 and 5.1.3.2.1.
+     *
+     * ACCESS_MASK bits are not mutually exclusive. Therefore, the ObjectType field can be set in an ACE with any
+     * ACCESS_MASK. If the AccessCheck algorithm calls this ACE and does not find an appropriate GUID, then that ACE
+     * will be ignored. For more information on access checks and object access, see [MS-ADTS] section 5.1.3.3.3.
+     *
+     * @return ObjectType; null if not available.
+     */
     public byte[] getObjectType() {
-        return objectType;
+        return this.objectType == null || this.objectType.length == 0
+                ? null
+                : Arrays.copyOf(this.objectType, this.objectType.length);
     }
 
+    /**
+     * A GUID (16 bytes) that identifies the type of child object that can inherit the ACE. Inheritance is also
+     * controlled by the inheritance flags in the ACE_HEADER, as well as by any protection against inheritance placed on
+     * the child objects. This field is valid only if the ACE_INHERITED_OBJECT_TYPE_PRESENT bit is set in the Flags
+     * member. Otherwise, the InheritedObjectType field is ignored.
+     *
+     * @return InheritedObjectType; null if not available.
+     */
     public byte[] getInheritedObjectType() {
-        return inheritedObjectType;
+        return this.inheritedObjectType == null || this.inheritedObjectType.length == 0
+                ? null
+                : Arrays.copyOf(this.inheritedObjectType, this.inheritedObjectType.length);
     }
 
+    /**
+     * The SID of a trustee. The length of the SID MUST be a multiple of 4.
+     *
+     * @see SID.
+     * @return SID of the trustee.
+     */
     public SID getSid() {
         return sid;
     }
 
+    /**
+     * An unsigned 16-bit integer that specifies the size, in bytes, of the ACE. The AceSize field can be greater than
+     * the sum of the individual fields, but MUST be a multiple of 4 to ensure alignment on a DWORD boundary. In cases
+     * where the AceSize field encompasses additional data for the callback ACEs types, that data is
+     * implementation-specific. Otherwise, this additional data is not interpreted and MUST be ignored.
+     *
+     * @return ACE size.
+     */
     public int getSize() {
         return 8 + (objectFlags == null ? 0 : 4)
                 + (objectType == null ? 0 : 16)
@@ -185,34 +269,84 @@ public class ACE {
                 + (applicationData == null ? 0 : applicationData.length);
     }
 
+    /**
+     * Sets ACE type.
+     *
+     * @param type ACE type.
+     * @see AceType.
+     */
     public void setType(final AceType type) {
         this.type = type;
     }
 
+    /**
+     * Adds ACE flag.
+     *
+     * @param flag ACE flag.
+     * @see AceFlag.
+     */
     public void addFlag(final AceFlag flag) {
         this.flags.add(flag);
     }
 
+    /**
+     * Sets ACE rights.
+     *
+     * @param rights ACE rights.
+     * @see AceRights.
+     */
     public void setRights(final AceRights rights) {
         this.rights = rights;
     }
 
+    /**
+     * Sets object flags.
+     *
+     * @param objectFlags ACE object flags.
+     * @see AceObjectFlags.
+     */
     public void setObjectFlags(final AceObjectFlags objectFlags) {
         this.objectFlags = objectFlags;
     }
 
+    /**
+     * Sets object type, a GUID (16 bytes) that identifies a property set, property, extended right, or type of child
+     * object.
+     *
+     * @param objectType ACE object type.
+     */
     public void setObjectType(final byte[] objectType) {
-        this.objectType = objectType;
+        this.objectType = objectType == null || objectType.length == 0
+                ? null
+                : Arrays.copyOf(objectType, objectType.length);
     }
 
+    /**
+     * Sets inherited object type, a GUID (16 bytes) that identifies the type of child object that can inherit the ACE.
+     *
+     * @param inheritedObjectType
+     */
     public void setInheritedObjectType(final byte[] inheritedObjectType) {
-        this.inheritedObjectType = inheritedObjectType;
+        this.inheritedObjectType = inheritedObjectType == null || inheritedObjectType.length == 0
+                ? null
+                : Arrays.copyOf(inheritedObjectType, inheritedObjectType.length);
     }
 
+    /**
+     * Sets the SID of a trustee.
+     *
+     * @param sid SID of the trustee.
+     * @see SID.
+     */
     public void setSid(final SID sid) {
         this.sid = sid;
     }
 
+    /**
+     * Serializes to byte array.
+     *
+     * @return serialized ACE.
+     */
     public byte[] toByteArray() {
         final int size = getSize();
 
@@ -262,13 +396,19 @@ public class ACE {
         return buff.array();
     }
 
+    /**
+     * {@inheritDoc }
+     *
+     * @param ace ACE to be compared with.
+     * @return <tt>true</tt> if equals; <tt>false</tt> otherwise.
+     */
     @Override
-    public boolean equals(final Object o) {
-        if (!(o instanceof ACE)) {
+    public boolean equals(final Object ace) {
+        if (!(ace instanceof ACE)) {
             return false;
         }
 
-        final ACE ext = ACE.class.cast(o);
+        final ACE ext = ACE.class.cast(ace);
 
         if (getSize() != ext.getSize()) {
             log.debug("Different size");
@@ -322,6 +462,11 @@ public class ACE {
         return new HashSet<>(getFlags()).equals(new HashSet<>(ext.getFlags()));
     }
 
+    /**
+     * Serializes to string.
+     *
+     * @return serialized ACE.
+     */
     @Override
     public String toString() {
         final StringBuilder bld = new StringBuilder();
@@ -366,6 +511,11 @@ public class ACE {
         return bld.toString();
     }
 
+    /**
+     * {@inheritDoc }
+     *
+     * @return hashcode.
+     */
     @Override
     public int hashCode() {
         int hash = 3;
