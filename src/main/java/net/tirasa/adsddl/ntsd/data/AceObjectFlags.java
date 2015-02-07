@@ -18,28 +18,68 @@ package net.tirasa.adsddl.ntsd.data;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A 32-bit unsigned integer that specifies a set of bit flags that indicate whether the ObjectType and
+ * InheritedObjectType fields contain valid data. This parameter can be one or more of the following values.
+ *
+ * @see https://msdn.microsoft.com/en-us/library/cc230289.aspx
+ */
 public class AceObjectFlags {
 
+    /**
+     * ACE object flag.
+     */
     public static enum Flag {
 
+        /**
+         * 0x00000001 - ObjectType is valid.
+         */
         ACE_OBJECT_TYPE_PRESENT(0x00000001),
+        /**
+         * 0x00000002 - InheritedObjectType is valid. If this value is not specified, all types of child objects can
+         * inherit the ACE.
+         */
         ACE_INHERITED_OBJECT_TYPE_PRESENT(0x00000002);
 
+        /**
+         * Int value.
+         */
         private final int value;
 
+        /**
+         * Private constructor.
+         *
+         * @param value int value.
+         */
         private Flag(int value) {
             this.value = value;
         }
 
+        /**
+         * Gets int value.
+         *
+         * @return int value.
+         */
         public int getValue() {
             return value;
         }
     }
 
+    /**
+     * Standard flags.
+     */
     private final List<Flag> flags = new ArrayList<>();
 
+    /**
+     * Custom/Other flags.
+     */
     private int others = 0;
 
+    /**
+     * Constructor.
+     *
+     * @param fls ACE object flags.
+     */
     public AceObjectFlags(final Flag... fls) {
         for (Flag flag : fls) {
             if (!flags.contains(flag)) {
@@ -48,6 +88,12 @@ public class AceObjectFlags {
         }
     }
 
+    /**
+     * Parse flags given as int value.
+     *
+     * @param value flags given as int value.
+     * @return ACE object flags.
+     */
     public static AceObjectFlags parseValue(final int value) {
         final AceObjectFlags res = new AceObjectFlags();
 
@@ -63,10 +109,21 @@ public class AceObjectFlags {
         return res;
     }
 
+    /**
+     * Gets standard ACE object flags.
+     *
+     * @return stabdatd ACE object flags.
+     */
     public List<Flag> getFlags() {
         return flags;
     }
 
+    /**
+     * Adds standard ACE object flag.
+     *
+     * @param flag standard ACE object flag.
+     * @return the current ACE object flags.
+     */
     public AceObjectFlags addFlag(final Flag flag) {
         if (!flags.contains(flag)) {
             flags.add(flag);
@@ -74,15 +131,31 @@ public class AceObjectFlags {
         return this;
     }
 
+    /**
+     * Gets custom/other ACE object flags.
+     *
+     * @return custom/other ACE object flags as long value.
+     */
     public long getOthers() {
         return others;
     }
 
+    /**
+     * Sets custom/others ACE object flags.
+     *
+     * @param others custom/other ACE object flags given as int value..
+     * @return the current ACE object flags.
+     */
     public AceObjectFlags setOthers(int others) {
         this.others = others;
         return this;
     }
 
+    /**
+     * Gets custom/other ACE object flags as long value.
+     *
+     * @return custom/other ACE object flags as long value.
+     */
     public long asUInt() {
         long res = others;
 

@@ -63,12 +63,24 @@ public class ACE {
      */
     private AceObjectFlags objectFlags;
 
+    /**
+     * A GUID (16 bytes) that identifies a property set, property, extended right, or type of child object.
+     */
     private byte[] objectType;
 
+    /**
+     * A GUID (16 bytes) that identifies the type of child object that can inherit the ACE.
+     */
     private byte[] inheritedObjectType;
 
+    /**
+     * Optional application data.
+     */
     private byte[] applicationData;
 
+    /**
+     * The SID of a trustee.
+     */
     private SID sid;
 
     /**
