@@ -19,6 +19,7 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import net.tirasa.adsddl.ntsd.utils.Hex;
@@ -26,6 +27,30 @@ import net.tirasa.adsddl.ntsd.utils.NumberFacility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A security identifier (SID) uniquely identifies a security principal. Each security principal has a unique SID that
+ * is issued by a security agent. The agent can be a Windows local system or domain. The agent generates the SID when
+ * the security principal is created. The SID can be represented as a character string or as a structure. When
+ * represented as strings, for example in documentation or logs, SIDs are expressed as follows:
+ *
+ * S-1-IdentifierAuthority-SubAuthority1-SubAuthority2-...-SubAuthorityn
+ *
+ * The top-level issuer is the authority. Each issuer specifies, in an implementation-specific manner, how many integers
+ * identify the next issuer.
+ *
+ * A newly created account store is assigned a 96-bit identifier (a cryptographic strength (pseudo) random number).
+ *
+ * A newly created security principal in an account store is assigned a 32-bit identifier that is unique within the
+ * store.
+ *
+ * The last item in the series of SubAuthority values is known as the relative identifier (RID). Differences in the RID
+ * are what distinguish the different SIDs generated within a domain.
+ *
+ * Consumers of SIDs SHOULD NOT rely on anything more than that the SID has the appropriate structure.
+ *
+ * @see https://msdn.microsoft.com/en-us/library/cc230371.aspx
+ * @see https://msdn.microsoft.com/en-us/library/gg465313.aspx
+ */
 public class SID {
 
     /**
@@ -33,16 +58,34 @@ public class SID {
      */
     protected static final Logger log = LoggerFactory.getLogger(SID.class);
 
+    /**
+     * An 8-bit unsigned integer that specifies the revision level of the SID. This value MUST be set to 0x01.
+     */
     private byte revision;
 
+    /**
+     * A SID_IDENTIFIER_AUTHORITY (6 bytes) structure that indicates the authority under which the SID was created.
+     * It describes the entity that created the SID. The Identifier Authority value {0,0,0,0,0,5} denotes SIDs created
+     * by the NT SID authority.
+     */
     private byte[] identifierAuthority;
 
+    /**
+     * A variable length list of unsigned 32-bit integers that uniquely identifies a principal relative to the
+     * IdentifierAuthority.
+     */
     private final List<byte[]> subAuthorities;
 
     SID() {
         subAuthorities = new ArrayList<>();
     }
 
+    /**
+     * Instances a new SID with the given identifier authority.
+     *
+     * @param identifier identifier authority.
+     * @return the SID instance.
+     */
     public static SID newInstance(final byte[] identifier) {
         final SID sid = new SID();
         sid.setRevision((byte) 0x01);
@@ -50,6 +93,12 @@ public class SID {
         return sid;
     }
 
+    /**
+     * Instances a SID instance of the given byte array.
+     *
+     * @param src SID as byte array.
+     * @return SID instance.
+     */
     public static SID parse(final byte[] src) {
         final ByteBuffer sddlBuffer = ByteBuffer.wrap(src);
         final SID sid = new SID();
@@ -99,49 +148,105 @@ public class SID {
         return pos;
     }
 
+    /**
+     * Gets revision level of the SID.
+     *
+     * @return revision.
+     */
     public byte getRevision() {
         return revision;
     }
 
+    /**
+     * Gets sub-authority number: an 8-bit unsigned integer that specifies the number of elements in the SubAuthority
+     * array. The maximum number of elements allowed is 15.
+     *
+     * @return sub-authorities number.
+     */
     public int getSubAuthorityCount() {
-        return subAuthorities.size();
+        return subAuthorities == null ? 0 : subAuthorities.size() > 15 ? 15 : subAuthorities.size();
     }
 
+    /**
+     * Gets identifier authority: 6 bytes describing the entity that created the SID.
+     *
+     * @return identifier authority.
+     */
     public byte[] getIdentifierAuthority() {
-        return identifierAuthority;
+        return identifierAuthority == null ? null : Arrays.copyOf(identifierAuthority, identifierAuthority.length);
     }
 
+    /**
+     * Gets sub-authorities: a list of unsigned 32-bit integers that uniquely identifies a principal
+     * relative to the IdentifierAuthority.
+     *
+     * @return sub-authorities.
+     */
     public List<byte[]> getSubAuthorities() {
-        return subAuthorities;
+        final List<byte[]> res = new ArrayList<>(getSubAuthorityCount());
+        for (byte[] sub : subAuthorities) {
+            if (sub != null) {
+                res.add(Arrays.copyOf(sub, sub.length));
+            }
+        }
+        return Collections.unmodifiableList(res);
     }
 
+    /**
+     * Gets size of the SID byte array form.
+     *
+     * @return size of SID byte aray form.
+     */
     public int getSize() {
         return 8 + subAuthorities.size() * 4;
     }
 
-    void setRevision(byte revision) {
+    /**
+     * Sets revision level of the SID.
+     *
+     * @param revision revision.
+     * @return the current SID instance.
+     */
+    public SID setRevision(byte revision) {
         this.revision = revision;
+        return this;
     }
 
+    /**
+     * Sets idetifier authority: 6 bytes describing the entity that created the SID.
+     *
+     * @param identifierAuthority identifier authority.
+     * @return the current SID instance.
+     */
     public SID setIdentifierAuthority(byte[] identifierAuthority) {
-        final ByteBuffer buff = ByteBuffer.allocate(6);
-
-        if (identifierAuthority != null) {
-            buff.position(6 - identifierAuthority.length);
-            buff.put(identifierAuthority);
+        if (identifierAuthority == null || identifierAuthority.length != 6) {
+            throw new IllegalArgumentException("Invalid identifier authority");
         }
 
-        this.identifierAuthority = buff.array();
+        this.identifierAuthority = Arrays.copyOf(identifierAuthority, identifierAuthority.length);
         return this;
     }
 
+    /**
+     * Adds sub-authority:a principal relative to the IdentifierAuthority.
+     *
+     * @param sub sub-authority.
+     * @return the current SID instance.
+     */
     public SID addSubAuthority(byte[] sub) {
-        if (sub != null) {
-            this.subAuthorities.add(sub);
+        if (sub == null || sub.length != 4) {
+            throw new IllegalArgumentException("Invalid sub-authority to be added");
         }
+
+        this.subAuthorities.add(Arrays.copyOf(sub, sub.length));
         return this;
     }
 
+    /**
+     * Serializes to byte array.
+     *
+     * @return serialized SID.
+     */
     public byte[] toByteArray() {
         // variable content size depending on sub authorities number
         final ByteBuffer buff = ByteBuffer.allocate(getSize());
@@ -154,6 +259,11 @@ public class SID {
         return buff.array();
     }
 
+    /**
+     * Serializes to string.
+     *
+     * @return serialized SID.
+     */
     @Override
     public String toString() {
         final StringBuilder bld = new StringBuilder();
@@ -178,13 +288,19 @@ public class SID {
         return bld.toString();
     }
 
+    /**
+     * {@inheritDoc }
+     *
+     * @param sid SID to be compared with.
+     * @return <tt>true</tt> if equals; <tt>false</tt> otherwise.
+     */
     @Override
-    public boolean equals(final Object o) {
-        if (!(o instanceof SID)) {
+    public boolean equals(final Object sid) {
+        if (!(sid instanceof SID)) {
             return false;
         }
 
-        final SID ext = SID.class.cast(o);
+        final SID ext = SID.class.cast(sid);
 
         if (getSize() != ext.getSize()) {
             log.debug("Different size");
@@ -213,6 +329,11 @@ public class SID {
         return true;
     }
 
+    /**
+     * {@inheritDoc }
+     *
+     * @return hashcode.
+     */
     @Override
     public int hashCode() {
         int hash = 5;
