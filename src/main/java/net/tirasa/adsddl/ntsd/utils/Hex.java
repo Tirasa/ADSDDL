@@ -15,8 +15,19 @@
  */
 package net.tirasa.adsddl.ntsd.utils;
 
+/**
+ * Utility class to be used to convert byte arrays into hexadecimal strings.
+ */
 public class Hex {
 
+    /**
+     * Gets hex string corresponding to the given byte array from "<tt>from</tt>" position to "<tt>to's</tt>"
+     *
+     * @param bytes bytes.
+     * @param from from position.
+     * @param to to position.
+     * @return hex string.
+     */
     public static String get(byte[] bytes, int from, int to) {
         final StringBuilder bld = new StringBuilder();
         for (int i = from; i < to; i++) {
@@ -25,6 +36,12 @@ public class Hex {
         return bld.toString();
     }
 
+    /**
+     * Gets hex string corresponding to the given bytes.
+     *
+     * @param bytes bytes.
+     * @return hex string.
+     */
     public static String get(byte... bytes) {
         final StringBuilder bld = new StringBuilder();
         for (byte b : bytes) {
@@ -32,7 +49,13 @@ public class Hex {
         }
         return bld.toString();
     }
-    
+
+    /**
+     * Gets escaped hex string corresponding to the given bytes.
+     *
+     * @param bytes bytes.
+     * @return escaped hex string
+     */
     public static String getEscaped(byte... bytes) {
         final StringBuilder bld = new StringBuilder();
         for (byte b : bytes) {
@@ -41,10 +64,22 @@ public class Hex {
         return bld.toString();
     }
 
+    /**
+     * Gets hex string corresponding to the given byte.
+     *
+     * @param b byte.
+     * @return hex string.
+     */
     public static String get(byte b) {
         return String.format("%02X", b);
     }
 
+    /**
+     * Reverses bytes.
+     *
+     * @param bytes bytes.
+     * @return reversed byte array.
+     */
     public static byte[] reverse(byte... bytes) {
         byte[] res = new byte[bytes.length];
         int j = 0;

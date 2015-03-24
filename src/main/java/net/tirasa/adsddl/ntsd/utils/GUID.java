@@ -18,8 +18,21 @@ package net.tirasa.adsddl.ntsd.utils;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
+/**
+ * Utility class to manage GUID.
+ * A GUID, also known as a UUID, is a 16-byte structure, intended to serve as a unique identifier for an object. There
+ * are three representations of a GUID, as described in the following sections.
+ *
+ * @see https://msdn.microsoft.com/en-us/library/cc230326.aspx
+ */
 public class GUID {
 
+    /**
+     * Gets GUID as string.
+     *
+     * @param GUID GUID.
+     * @return GUID as string.
+     */
     public static String getGuidAsString(byte[] GUID) {
         final StringBuilder res = new StringBuilder();
 
@@ -48,6 +61,12 @@ public class GUID {
 
     }
 
+    /**
+     * Gets GUID as byte array.
+     *
+     * @param GUID GUID.
+     * @return GUID as byte array.
+     */
     public static byte[] getGuidAsByteArray(final String GUID) {
         final UUID uuid = UUID.fromString(GUID);
 

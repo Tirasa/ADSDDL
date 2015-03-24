@@ -24,10 +24,23 @@ import net.tirasa.adsddl.ntsd.data.AceObjectFlags;
 import net.tirasa.adsddl.ntsd.data.AceRights;
 import net.tirasa.adsddl.ntsd.data.AceType;
 
+/**
+ * SDDL helper class.
+ * Provides facilities to set and unset specific ACLs.
+ */
 public class SDDLHelper {
 
+    /**
+     * User cannot change password GUID.
+     */
     public static final String UCP_OBJECT_GUID = "ab721a53-1e2f-11d0-9819-00aa0040529b";
 
+    /**
+     * Check if user canot change password.
+     *
+     * @param sddl SSDL.
+     * @return <tt>true</tt> if user cannot change password: <tt>false</tt> otherwise.
+     */
     public static boolean isUserCannotChangePassword(final SDDL sddl) {
         boolean res = false;
 
@@ -59,6 +72,13 @@ public class SDDLHelper {
         return res;
     }
 
+    /**
+     * Set "User Cannot Change Password ACL".
+     *
+     * @param sddl SDDL.
+     * @param cannot <tt>true</tt> to set the ACL; <tt>false</tt> to unset.
+     * @return updated SDDL.
+     */
     public static SDDL userCannotChangePassword(final SDDL sddl, final Boolean cannot) {
         final AceType type = cannot ? AceType.ACCESS_DENIED_OBJECT_ACE_TYPE : AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE;
 

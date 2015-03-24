@@ -19,16 +19,37 @@ import java.nio.ByteBuffer;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
 
+/**
+ * Utility class to be used to manipulate byte arrays and numbers.
+ */
 public class NumberFacility {
 
+    /**
+     * Gets byte array corresponding to a given unsigned integer.
+     *
+     * @param value unsigned integer.
+     * @return byte array.
+     */
     public static byte[] getUIntBytes(final long value) {
         return Arrays.copyOfRange(ByteBuffer.allocate(8).putLong(value).array(), 4, 8);
     }
 
+    /**
+     * Gets byte array from integer.
+     *
+     * @param value integer.
+     * @return byte array.
+     */
     public static byte[] getBytes(final int value) {
         return ByteBuffer.allocate(4).putInt(value).array();
     }
 
+    /**
+     * Gets bits as boolean array from a given byte array.
+     *
+     * @param bytes bytes.
+     * @return bits.
+     */
     public static boolean[] getBits(final byte... bytes) {
         if (bytes.length > 4) {
             throw new InvalidParameterException("Invalid number of bytes");
@@ -48,6 +69,12 @@ public class NumberFacility {
         return res;
     }
 
+    /**
+     * Gets bits as boolean array from a given byte.
+     *
+     * @param b byte.
+     * @return bits.
+     */
     public static boolean[] getBits(final byte b) {
         final boolean[] res = new boolean[8];
         for (int i = 0; i < 8; i++) {
@@ -56,26 +83,64 @@ public class NumberFacility {
         return res;
     }
 
+    /**
+     * Reverts bytes and retrieves the corresponding integer value.
+     *
+     * @param bytes bytes.
+     * @return integer.
+     */
     public static int getReverseInt(final byte... bytes) {
         return (int) getReverseUInt(bytes);
     }
 
+    /**
+     * Reverses bytes and retrieves the corresponding unsigned integer value.
+     *
+     * @param bytes bytes.
+     * @return unsigned integer.
+     */
     public static long getReverseUInt(final byte... bytes) {
         return getUInt(Hex.reverse(bytes));
     }
 
+    /**
+     * Gets byte array corresponding to the given integer value, reverses obtained byte array and retrieves the new
+     * integer value.
+     *
+     * @param value integer value.
+     * @return reversed integer value.
+     */
     public static int getReverseInt(final int value) {
         return (int) getReverseUInt(value);
     }
 
+    /**
+     * Gets byte array corresponding to the given integer value, reverses obtained byte array and retrieves the new
+     * unsigned integer value.
+     *
+     * @param value integer value.
+     * @return reversed unsigned integer value.
+     */
     public static long getReverseUInt(final int value) {
         return getReverseUInt(getBytes(value));
     }
 
+    /**
+     * Gets integer value corresponding to the given bytes.
+     *
+     * @param bytes bytes.
+     * @return integer.
+     */
     public static int getInt(final byte... bytes) {
         return (int) getUInt(bytes);
     }
 
+    /**
+     * Gets unsigned integer value corresponding to the given bytes.
+     *
+     * @param bytes bytes.
+     * @return unsigned integer.
+     */
     public static long getUInt(final byte... bytes) {
         if (bytes.length > 4) {
             throw new InvalidParameterException("Invalid number of bytes");
