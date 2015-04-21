@@ -15,11 +15,17 @@
  */
 package net.tirasa.adsddl.unit;
 
+import static net.tirasa.adsddl.unit.AbstractTest.SDDL_ALL_SAMPLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import net.tirasa.adsddl.ntsd.SDDL;
 import net.tirasa.adsddl.ntsd.utils.GUID;
 import net.tirasa.adsddl.ntsd.utils.NumberFacility;
 import net.tirasa.adsddl.ntsd.utils.SDDLHelper;
@@ -77,5 +83,13 @@ public class BasicTest {
 
             i += 98765;
         }
+    }
+
+    @Test
+    public void sddlToString() throws IOException, URISyntaxException {
+        final byte[] src = Files.readAllBytes(Paths.get(this.getClass().getResource(SDDL_ALL_SAMPLE).toURI()));
+        final SDDL sddl = new SDDL(src);
+        
+        // TODO: complete sddl string representation check
     }
 }

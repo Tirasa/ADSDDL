@@ -483,7 +483,7 @@ public class ACE {
     public String toString() {
         final StringBuilder bld = new StringBuilder();
         bld.append('(');
-        bld.append(type.name());
+        bld.append(type.toString());
         bld.append(';');
 
         for (AceFlag flag : flags) {
