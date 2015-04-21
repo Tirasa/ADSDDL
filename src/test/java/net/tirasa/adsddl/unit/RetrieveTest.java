@@ -24,13 +24,13 @@ public class RetrieveTest extends AbstractTest {
     private static final long serialVersionUID = 1L;
 
     @Test
-    public void UnMarshall() throws Exception {
+    public void unMarshall() throws Exception {
         final byte[] src = Files.readAllBytes(Paths.get(this.getClass().getResource(SDDL_ALL_SAMPLE).toURI()));
         UnMarshall(src);
     }
 
     @Test
-    public void UserChangePassword() throws Exception {
+    public void userChangePassword() throws Exception {
         final byte[] src = Files.readAllBytes(Paths.get(this.getClass().getResource(DACL_ONLY_SAMPLE).toURI()));
         UserChangePassword(src);
     }

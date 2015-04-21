@@ -53,7 +53,7 @@ public abstract class AbstractTest extends net.tirasa.adsddl.unit.AbstractTest {
         env.put(Context.SECURITY_CREDENTIALS, prop.getProperty("credentials"));
         env.put(Context.SECURITY_PROTOCOL, "ssl");
         env.put("java.naming.ldap.factory.socket", "net.tirasa.adsddl.utils.DummySocketFactory");
-        env.put("java.naming.ldap.attributes.binary", "nTSecurityDescriptor");
+        env.put("java.naming.ldap.attributes.binary", "nTSecurityDescriptor objectSID");
 
         env.put(Context.REFERRAL, "follow");
 

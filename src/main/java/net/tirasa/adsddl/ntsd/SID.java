@@ -83,7 +83,7 @@ public class SID {
     /**
      * Instances a new SID with the given identifier authority.
      *
-     * @param identifier identifier authority.
+     * @param identifier identifier authority (6 bytes only).
      * @return the SID instance.
      */
     public static SID newInstance(final byte[] identifier) {
