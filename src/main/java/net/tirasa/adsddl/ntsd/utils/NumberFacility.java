@@ -45,6 +45,34 @@ public class NumberFacility {
     }
 
     /**
+     * Remove 0x00 bytes from left side.
+     *
+     * @param bytes source array.
+     * @return trimmed array.
+     */
+    @SuppressWarnings("empty-statement")
+    public static byte[] leftTrim(final byte... bytes) {
+        int pos = 0;
+        for (; pos < bytes.length && bytes[pos] == 0x00; pos++);
+
+        if (pos < bytes.length) {
+            return Arrays.copyOfRange(bytes, pos, bytes.length);
+        } else {
+            return new byte[] { 0x00 };
+        }
+    }
+
+    /**
+     * Remove 0x00 bytes from right side.
+     *
+     * @param bytes source array.
+     * @return trimmed array.
+     */
+    public static byte[] rightTrim(final byte... bytes) {
+        return Hex.reverse(leftTrim(Hex.reverse(bytes)));
+    }
+
+    /**
      * Gets bits as boolean array from a given byte array.
      *
      * @param bytes bytes.
