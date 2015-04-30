@@ -13,17 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.tirasa.adsddl.ntsd.data;
+package net.tirasa.adsddl.ntsd.controls;
 
-import com.sun.jndi.ldap.BerEncoder;
-import java.io.IOException;
+import java.nio.ByteBuffer;
 import javax.naming.ldap.BasicControl;
+import net.tirasa.adsddl.ntsd.utils.NumberFacility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
- *
  * When performing an LDAP operation (modify or search), the client may supply an SD Flags Control
  * LDAP_SERVER_SD_FLAGS_OID (1.2.840.113556.1.4.801) with the operation. The value of the control is an integer, which
  * is used to identify which security descriptor (SD) parts the client intends to read or modify. When the control is
@@ -48,7 +46,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SDFlagsControl extends BasicControl {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -930993758829518419L;
 
     /**
      * Logger.
@@ -103,18 +101,25 @@ public class SDFlagsControl extends BasicControl {
         this.flags = flags == null ? 0x00000001 + 0x00000002 + 0x00000004 + 0x00000008 : flags;
 
         try {
-            this.value = setEncodedValue();
+            this.value = berEncodedValue();
         } catch (Exception e) {
             log.error("Error setting SD control flags", e);
             this.value = new byte[0];
         }
     }
 
-    private byte[] setEncodedValue() throws IOException {
-        final BerEncoder ber = new BerEncoder(64);
-        ber.beginSeq(48); // (Ber.ASN_SEQUENCE | Ber.ASN_CONSTRUCTOR);
-        ber.encodeInt(flags);
-        ber.endSeq();
-        return ber.getTrimmedBuf();
+    /**
+     * BER encode the flags.
+     *
+     * @return flags BER encoded.
+     */
+    private byte[] berEncodedValue() {
+        final ByteBuffer buff = ByteBuffer.allocate(5);
+        buff.put((byte) 0x30); // (Ber.ASN_SEQUENCE | Ber.ASN_CONSTRUCTOR);
+        buff.put((byte) 0x03); // size
+        buff.put((byte) 0x02); // 4bytes int tag
+        buff.put((byte) 0x01); // int size
+        buff.put(NumberFacility.leftTrim(NumberFacility.getBytes(flags))); // value
+        return buff.array();
     }
 }

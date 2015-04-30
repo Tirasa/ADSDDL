@@ -101,5 +101,11 @@ public class BasicTest {
         assertEquals("010200", Hex.get(actual));
         actual = NumberFacility.rightTrim(NumberFacility.getBytes(src));
         assertEquals("000102", Hex.get(actual));
+
+        src = 0x00000000;
+        actual = NumberFacility.leftTrim(NumberFacility.getBytes(src));
+        assertEquals("00", Hex.get(actual));
+        actual = NumberFacility.rightTrim(NumberFacility.getBytes(src));
+        assertEquals("00", Hex.get(actual));
     }
 }

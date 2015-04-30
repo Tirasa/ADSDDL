@@ -38,7 +38,7 @@ import net.tirasa.adsddl.ntsd.SID;
 import net.tirasa.adsddl.ntsd.data.AceObjectFlags;
 import net.tirasa.adsddl.ntsd.data.AceRights;
 import net.tirasa.adsddl.ntsd.data.AceType;
-import net.tirasa.adsddl.ntsd.data.SDFlagsControl;
+import net.tirasa.adsddl.ntsd.controls.SDFlagsControl;
 import net.tirasa.adsddl.ntsd.utils.GUID;
 import net.tirasa.adsddl.ntsd.utils.NumberFacility;
 import net.tirasa.adsddl.ntsd.utils.SDDLHelper;
