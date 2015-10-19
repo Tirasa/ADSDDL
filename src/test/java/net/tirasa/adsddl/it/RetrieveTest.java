@@ -93,7 +93,7 @@ public class RetrieveTest extends AbstractTest {
 
         final NamingEnumeration<SearchResult> results = ctx.search(baseContext, searchFilter, controls);
 
-        while (results.hasMore()) {
+        while (results.hasMoreElements()) {
             final SearchResult res = results.next();
             final byte[] src = (byte[]) res.getAttributes().get("nTSecurityDescriptor").get();
             UserChangePassword(src);
@@ -110,7 +110,7 @@ public class RetrieveTest extends AbstractTest {
 
         final NamingEnumeration<SearchResult> results = ctx.search(baseContext, searchFilter, controls);
 
-        while (results.hasMore()) {
+        while (results.hasMoreElements()) {
             final SearchResult res = results.next();
             final byte[] src = (byte[]) res.getAttributes().get("nTSecurityDescriptor").get();
             ucpChangeUnMarshall(src);
