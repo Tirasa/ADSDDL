@@ -28,7 +28,7 @@
 
   <groupId>net.tirasa</groupId>
   <artifactId>adsddl</artifactId>
-  <version>1.5-SNAPSHOT</version>
+  <version>1.5</version>
 
   <name>ADSDDL</name>
   <url>https://github.com/Tirasa/ADSDDL</url>
