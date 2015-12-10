@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import net.tirasa.adsddl.ntsd.data.AceFlag;
 import net.tirasa.adsddl.ntsd.data.AceObjectFlags;
 import net.tirasa.adsddl.ntsd.data.AceRights;
@@ -471,7 +470,7 @@ public class ACE {
             return false;
         }
 
-        return new HashSet<>(getFlags()).equals(new HashSet<>(ext.getFlags()));
+        return new HashSet<AceFlag>(getFlags()).equals(new HashSet<AceFlag>(ext.getFlags()));
     }
 
     /**
@@ -523,22 +522,17 @@ public class ACE {
         return bld.toString();
     }
 
-    /**
-     * {@inheritDoc }
-     *
-     * @return hashcode.
-     */
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 53 * hash + Objects.hashCode(this.type);
-        hash = 53 * hash + Objects.hashCode(this.flags);
-        hash = 53 * hash + Objects.hashCode(this.rights);
-        hash = 53 * hash + Objects.hashCode(this.objectFlags);
-        hash = 53 * hash + Arrays.hashCode(this.objectType);
-        hash = 53 * hash + Arrays.hashCode(this.inheritedObjectType);
-        hash = 53 * hash + Arrays.hashCode(this.applicationData);
-        hash = 53 * hash + Objects.hashCode(this.sid);
+        hash = 47 * hash + (this.type != null ? this.type.hashCode() : 0);
+        hash = 47 * hash + (this.flags != null ? this.flags.hashCode() : 0);
+        hash = 47 * hash + (this.rights != null ? this.rights.hashCode() : 0);
+        hash = 47 * hash + (this.objectFlags != null ? this.objectFlags.hashCode() : 0);
+        hash = 47 * hash + Arrays.hashCode(this.objectType);
+        hash = 47 * hash + Arrays.hashCode(this.inheritedObjectType);
+        hash = 47 * hash + Arrays.hashCode(this.applicationData);
+        hash = 47 * hash + (this.sid != null ? this.sid.hashCode() : 0);
         return hash;
     }
 

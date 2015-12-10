@@ -15,29 +15,26 @@
  */
 package net.tirasa.adsddl.unit;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 public class RetrieveTest extends AbstractTest {
 
-    private static final long serialVersionUID = 1L;
-
     @Test
     public void unMarshall() throws Exception {
-        final byte[] src = Files.readAllBytes(Paths.get(this.getClass().getResource(SDDL_ALL_SAMPLE).toURI()));
+        final byte[] src = IOUtils.toByteArray(this.getClass().getResourceAsStream(SDDL_ALL_SAMPLE));
         UnMarshall(src);
     }
 
     @Test
     public void userChangePassword() throws Exception {
-        final byte[] src = Files.readAllBytes(Paths.get(this.getClass().getResource(DACL_ONLY_SAMPLE).toURI()));
+        final byte[] src = IOUtils.toByteArray(this.getClass().getResourceAsStream(DACL_ONLY_SAMPLE));
         UserChangePassword(src);
     }
 
     @Test
     public void ucpChangeUnMarshall() throws Exception {
-        final byte[] src = Files.readAllBytes(Paths.get(this.getClass().getResource(DACL_ONLY_SAMPLE).toURI()));
+        final byte[] src = IOUtils.toByteArray(this.getClass().getResourceAsStream(DACL_ONLY_SAMPLE));
         ucpChangeUnMarshall(src);
     }
 }

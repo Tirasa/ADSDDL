@@ -22,14 +22,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import net.tirasa.adsddl.ntsd.SDDL;
 import net.tirasa.adsddl.ntsd.utils.GUID;
 import net.tirasa.adsddl.ntsd.utils.Hex;
 import net.tirasa.adsddl.ntsd.utils.NumberFacility;
 import net.tirasa.adsddl.ntsd.utils.SDDLHelper;
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 public class BasicTest {
@@ -88,7 +87,7 @@ public class BasicTest {
 
     @Test
     public void sddlToString() throws IOException, URISyntaxException {
-        final byte[] src = Files.readAllBytes(Paths.get(this.getClass().getResource(SDDL_ALL_SAMPLE).toURI()));
+        final byte[] src = IOUtils.toByteArray(this.getClass().getResourceAsStream(SDDL_ALL_SAMPLE));
         final SDDL sddl = new SDDL(src);
 
         // TODO: complete sddl string representation check

@@ -199,7 +199,7 @@ public class UpdateTest extends AbstractTest {
         assertNotNull(sddl.getOwner());
         assertNotNull(sddl.getGroup());
 
-        final List<ACE> found = new ArrayList<>();
+        final List<ACE> found = new ArrayList<ACE>();
 
         for (ACE ace : sddl.getDacl().getAces()) {
             if (ace.getType() == AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE
@@ -275,7 +275,7 @@ public class UpdateTest extends AbstractTest {
         assertNotNull(sddl.getOwner());
         assertNotNull(sddl.getGroup());
 
-        final List<ACE> found = new ArrayList<>();
+        final List<ACE> found = new ArrayList<ACE>();
 
         for (ACE ace : sddl.getDacl().getAces()) {
             if (ace.getType() == AceType.ACCESS_DENIED_OBJECT_ACE_TYPE

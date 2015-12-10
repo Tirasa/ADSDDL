@@ -18,7 +18,6 @@ package net.tirasa.adsddl.ntsd;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Arrays;
-import java.util.Objects;
 import net.tirasa.adsddl.ntsd.utils.Hex;
 import net.tirasa.adsddl.ntsd.utils.NumberFacility;
 import org.slf4j.Logger;
@@ -444,8 +443,9 @@ public class SDDL {
 
     /**
      * Serializes SDDL as string.
+     *
      * @return SDDL string representation.
-     * 
+     *
      * @see https://msdn.microsoft.com/en-us/library/hh877835.aspx
      */
     @Override
@@ -474,17 +474,20 @@ public class SDDL {
         return bld.toString();
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 71 * hash + Arrays.hashCode(this.controlFlags);
-        hash = 71 * hash + Objects.hashCode(this.owner);
-        hash = 71 * hash + Objects.hashCode(this.group);
-        hash = 71 * hash + Objects.hashCode(this.dacl);
-        hash = 71 * hash + Objects.hashCode(this.sacl);
+        int hash = 7;
+        hash = 67 * hash + this.revision;
+        hash = 67 * hash + Arrays.hashCode(this.controlFlags);
+        hash = 67 * hash + (int) (this.offsetOwner ^ (this.offsetOwner >>> 32));
+        hash = 67 * hash + (int) (this.offsetGroup ^ (this.offsetGroup >>> 32));
+        hash = 67 * hash + (int) (this.offsetSACL ^ (this.offsetSACL >>> 32));
+        hash = 67 * hash + (int) (this.offsetDACL ^ (this.offsetDACL >>> 32));
+        hash = 67 * hash + (this.owner != null ? this.owner.hashCode() : 0);
+        hash = 67 * hash + (this.group != null ? this.group.hashCode() : 0);
+        hash = 67 * hash + (this.dacl != null ? this.dacl.hashCode() : 0);
+        hash = 67 * hash + (this.sacl != null ? this.sacl.hashCode() : 0);
         return hash;
     }
+
 }

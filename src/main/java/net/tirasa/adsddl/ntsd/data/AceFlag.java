@@ -106,7 +106,7 @@ public enum AceFlag {
      * @return ACE flags.
      */
     public static List<AceFlag> parseValue(final byte value) {
-        final List<AceFlag> res = new ArrayList<>();
+        final List<AceFlag> res = new ArrayList<AceFlag>();
 
         for (AceFlag type : AceFlag.values()) {
             if ((value & type.getValue()) == type.getValue()) {

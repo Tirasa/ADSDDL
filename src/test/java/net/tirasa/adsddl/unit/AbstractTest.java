@@ -39,11 +39,6 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AbstractTest {
 
-    private static final long serialVersionUID = 1L;
-
-    /**
-     * Logger.
-     */
     protected static final Logger log = LoggerFactory.getLogger(AbstractTest.class);
 
     protected static final String SDDL_ALL_SAMPLE = "/sddlSample.bin";

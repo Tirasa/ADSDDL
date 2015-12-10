@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import net.tirasa.adsddl.ntsd.utils.Hex;
 import net.tirasa.adsddl.ntsd.utils.NumberFacility;
 import org.slf4j.Logger;
@@ -77,7 +76,7 @@ public class SID {
     private final List<byte[]> subAuthorities;
 
     SID() {
-        subAuthorities = new ArrayList<>();
+        subAuthorities = new ArrayList<byte[]>();
     }
 
     /**
@@ -183,7 +182,7 @@ public class SID {
      * @return sub-authorities.
      */
     public List<byte[]> getSubAuthorities() {
-        final List<byte[]> res = new ArrayList<>(getSubAuthorityCount());
+        final List<byte[]> res = new ArrayList<byte[]>(getSubAuthorityCount());
         for (byte[] sub : subAuthorities) {
             if (sub != null) {
                 res.add(Arrays.copyOf(sub, sub.length));
@@ -329,16 +328,11 @@ public class SID {
         return true;
     }
 
-    /**
-     * {@inheritDoc }
-     *
-     * @return hashcode.
-     */
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 97 * hash + Arrays.hashCode(this.identifierAuthority);
-        hash = 97 * hash + Objects.hashCode(this.subAuthorities);
+        int hash = 7;
+        hash = 59 * hash + Arrays.hashCode(this.identifierAuthority);
+        hash = 59 * hash + (this.subAuthorities != null ? this.subAuthorities.hashCode() : 0);
         return hash;
     }
 

@@ -19,7 +19,6 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import net.tirasa.adsddl.ntsd.data.AclRevision;
 import net.tirasa.adsddl.ntsd.utils.NumberFacility;
 import org.slf4j.Logger;
@@ -72,7 +71,7 @@ public class ACL {
      */
     private AclRevision revision;
 
-    private final List<ACE> aces = new ArrayList<>();
+    private final List<ACE> aces = new ArrayList<ACE>();
 
     /**
      * Protected constructor.
@@ -256,15 +255,10 @@ public class ACL {
         return bld.toString();
     }
 
-    /**
-     * {@inheritDoc }
-     *
-     * @return hashcode.
-     */
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 43 * hash + Objects.hashCode(this.aces);
+        hash = 67 * hash + (this.aces != null ? this.aces.hashCode() : 0);
         return hash;
     }
 

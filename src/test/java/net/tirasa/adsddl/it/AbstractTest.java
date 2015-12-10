@@ -42,7 +42,7 @@ public abstract class AbstractTest extends net.tirasa.adsddl.unit.AbstractTest {
         prop.load(AbstractTest.class.getResourceAsStream("/conf.properties"));
 
         @SuppressWarnings({ "UseOfObsoleteCollectionType", "rawtypes" })
-        final java.util.Hashtable env = new java.util.Hashtable<>();
+        final java.util.Hashtable env = new java.util.Hashtable();
 
         env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 

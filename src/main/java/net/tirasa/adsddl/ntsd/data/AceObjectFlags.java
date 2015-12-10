@@ -68,7 +68,7 @@ public class AceObjectFlags {
     /**
      * Standard flags.
      */
-    private final List<Flag> flags = new ArrayList<>();
+    private final List<Flag> flags = new ArrayList<Flag>();
 
     /**
      * Custom/Other flags.

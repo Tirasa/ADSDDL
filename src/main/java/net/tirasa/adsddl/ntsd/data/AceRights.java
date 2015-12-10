@@ -175,7 +175,7 @@ public class AceRights {
     /**
      * Standard ACE rights.
      */
-    private final List<AceRights.ObjectRight> rights = new ArrayList<>();
+    private final List<AceRights.ObjectRight> rights = new ArrayList<AceRights.ObjectRight>();
 
     /**
      * Default constructor.

@@ -31,8 +31,6 @@ import org.slf4j.LoggerFactory;
 
 public class DummySocketFactory extends SSLSocketFactory {
 
-    private static final long serialVersionUID = 1L;
-
     private static final Logger log = LoggerFactory.getLogger(DummySocketFactory.class);
 
     private SSLSocketFactory socketFactory;
@@ -42,7 +40,9 @@ public class DummySocketFactory extends SSLSocketFactory {
             final SSLContext ctx = SSLContext.getInstance("TLS");
             ctx.init(null, new TrustManager[] { new DummyTrustManager() }, new SecureRandom());
             socketFactory = ctx.getSocketFactory();
-        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+        } catch (NoSuchAlgorithmException e) {
+            log.debug("Connection error", e);
+        } catch (KeyManagementException e) {
             log.debug("Connection error", e);
         }
     }
