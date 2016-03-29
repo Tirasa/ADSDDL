@@ -23,7 +23,10 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.tirasa.adsddl.ntsd.SDDL;
+import net.tirasa.adsddl.ntsd.controls.DirSyncControl;
 import net.tirasa.adsddl.ntsd.utils.GUID;
 import net.tirasa.adsddl.ntsd.utils.Hex;
 import net.tirasa.adsddl.ntsd.utils.NumberFacility;
@@ -106,5 +109,50 @@ public class BasicTest {
         assertEquals("00", Hex.get(actual));
         actual = NumberFacility.rightTrim(NumberFacility.getBytes(src));
         assertEquals("00", Hex.get(actual));
+    }
+
+    @Test
+    public void berEncoding() {
+        try {
+
+            final String cookie = "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on"
+                    + "test dir sync control against buffer overflow exceptions and so on";
+
+            final int expectedValueSize = 16 + 2 + 2 + cookie.length();
+
+            final byte[] value = new DirSyncControl(cookie.getBytes()).getEncodedValue();
+
+            assertEquals(expectedValueSize, value.length);
+
+            assertEquals((byte) 0x30, value[0]);
+            assertEquals((byte) 0x82, value[1]); // long form
+            assertEquals((byte) 0x02, value[4]);
+            assertEquals((byte) 0x04, value[5]);
+            assertEquals((byte) 0x82, value[17]); // long form
+
+            assertEquals('n', value[expectedValueSize - 1]);
+        } catch (Exception ex) {
+            Logger.getLogger(BasicTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 }

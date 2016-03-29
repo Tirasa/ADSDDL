@@ -68,7 +68,8 @@ public class DirSyncControl extends BasicControl {
 
     /**
      * Constructor.
-     * @param cookie cookie. 
+     *
+     * @param cookie cookie.
      */
     public DirSyncControl(byte[] cookie) {
         super(OID, true, cookie);
@@ -77,24 +78,27 @@ public class DirSyncControl extends BasicControl {
 
     /**
      * BER encode the cookie value.
+     *
      * @param cookie cookie value to be encoded.
      * @return ber encoded cookie value.
      */
     private byte[] berEncodedValue(byte[] cookie) {
         final byte[] cookieSize = NumberFacility.leftTrim(NumberFacility.getBytes(cookie.length));
-        final byte[] size = NumberFacility.leftTrim(NumberFacility.getBytes(13 + cookieSize.length + cookie.length));
+        final byte[] size = NumberFacility.leftTrim(NumberFacility.getBytes(14 + cookieSize.length + cookie.length));
 
-        final ByteBuffer buff = ByteBuffer.allocate(15 + cookieSize.length + cookie.length);
+        final ByteBuffer buff = ByteBuffer.allocate(1 + 1 + size.length + 14 + cookieSize.length + cookie.length);
 
         buff.put((byte) 0x30); // (Ber.ASN_SEQUENCE | Ber.ASN_CONSTRUCTOR);
+        buff.put((byte) (size.length == 1 ? 0x81 : size.length == 2 ? 0x82 : 0x83)); // size type (short or long form)
         buff.put(size); // sequence size
-        buff.put((byte) 0x02); // int tag
+        buff.put((byte) 0x02); // 4bytes int tag
         buff.put((byte) 0x04); // int size
         buff.putInt(flags); // flags
         buff.put((byte) 0x02); // 4bytes int tag
         buff.put((byte) 0x04); // int size
         buff.putInt(Integer.MAX_VALUE); // max attribute count
         buff.put((byte) 0x04); // byte array tag
+        buff.put((byte) (cookieSize.length == 1 ? 0x81 : cookieSize.length == 2 ? 0x82 : 0x83)); // short or long form
         buff.put(cookieSize); // byte array size
         if (cookie.length > 0) {
             buff.put(cookie); // (cookie, Ber.ASN_OCTET_STR);
