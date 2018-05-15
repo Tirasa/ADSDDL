@@ -1,11 +1,11 @@
-/**
+/*
  * Copyright (C) 2015 Tirasa (info@tirasa.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,7 +41,7 @@ public class ACE {
     /**
      * Logger.
      */
-    protected static final Logger log = LoggerFactory.getLogger(ACE.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(ACE.class);
 
     /**
      * @see AceType.
@@ -423,22 +423,22 @@ public class ACE {
         final ACE ext = ACE.class.cast(ace);
 
         if (getSize() != ext.getSize()) {
-            log.debug("Different size");
+            LOG.debug("Different size");
             return false;
         }
 
         if (getType() != ext.getType()) {
-            log.debug("Different type");
+            LOG.debug("Different type");
             return false;
         }
 
         if (!Arrays.equals(getApplicationData(), ext.getApplicationData())) {
-            log.debug("Different application data");
+            LOG.debug("Different application data");
             return false;
         }
 
         if (!getSid().equals(ext.getSid())) {
-            log.debug("Different SID");
+            LOG.debug("Different SID");
             return false;
         }
 
@@ -446,7 +446,7 @@ public class ACE {
                 || (getObjectFlags() != null && ext.getObjectFlags() == null)
                 || (getObjectFlags() != null && ext.getObjectFlags() != null
                 && getObjectFlags().asUInt() != ext.getObjectFlags().asUInt())) {
-            log.debug("Different object flags");
+            LOG.debug("Different object flags");
             return false;
         }
 
@@ -454,7 +454,7 @@ public class ACE {
                 || (getObjectType() == null && ext.getObjectType() != null)
                 || (getObjectType() != null && ext.getObjectType() != null
                 && !Arrays.equals(getObjectType(), ext.getObjectType()))) {
-            log.debug("Different object type");
+            LOG.debug("Different object type");
             return false;
         }
 
@@ -462,12 +462,12 @@ public class ACE {
                 || (getInheritedObjectType() == null && ext.getInheritedObjectType() != null)
                 || (getInheritedObjectType() != null && ext.getInheritedObjectType() != null
                 && !Arrays.equals(getInheritedObjectType(), ext.getInheritedObjectType()))) {
-            log.debug("Different inherited object type");
+            LOG.debug("Different inherited object type");
             return false;
         }
 
         if (getRights().asUInt() != ext.getRights().asUInt()) {
-            log.debug("Different rights");
+            LOG.debug("Different rights");
             return false;
         }
 
