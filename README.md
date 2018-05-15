@@ -7,6 +7,6 @@ Active Directory ntSecurityDescriptor simple parser
 <dependency>
   <groupId>net.tirasa</groupId>
   <artifactId>adsddl</artifactId>
-  <version>1.4</version>
+  <version>1.6</version>
 </dependency>
 ```
