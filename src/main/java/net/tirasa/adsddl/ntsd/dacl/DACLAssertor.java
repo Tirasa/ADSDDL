@@ -14,6 +14,7 @@ import javax.naming.CommunicationException;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.SizeLimitExceededException;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.Control;
@@ -125,6 +126,8 @@ public class DACLAssertor {
      *             if the DACL search fails
      * @throws NamingException
      *             if extracting the DACL fails or another JNDI issue occurs
+     * @throws SizeLimitExceededException
+     *             if more than one AD object found during DACL search
      */
     public boolean doAssert(AdRoleAssertion roleAssertion) throws NamingException {
         boolean result = false;
@@ -178,12 +181,16 @@ public class DACLAssertor {
         try {
             results = ldapContext.search("", searchFilter, controls);
             if (!results.hasMoreElements()) {
-                log.warn("getDACL, searchFilter: {} found nothing in context: {}", searchFilter,
+                log.warn("getDACL, searchFilter '{}' found nothing in context '{}'", searchFilter,
                         ldapContext.getNameInNamespace());
                 throw new NameNotFoundException("No results found for: " + searchFilter);
             }
 
             SearchResult res = results.next();
+            if (results.hasMoreElements()) {
+                // result from search filter is not unique
+                throw new SizeLimitExceededException("The search filter '{}' matched more than one AD object");
+            }            
             final byte[] descbytes = (byte[]) res.getAttributes().get("nTSecurityDescriptor").get();
             final SDDL sddl = new SDDL(descbytes);
             dacl = sddl.getDacl();
@@ -225,7 +232,7 @@ public class DACLAssertor {
         }
 
         // Find any roleAssertion ACEs not matched in the DACL.
-        // Not using Java 8 or other libs for this to keep dependencies of ADSDDL as is for possible contrib to that project.
+        // Not using Java 8 or other libs for this to keep dependencies of ADSDDL as is.
         // ------------------------------
         List<AceAssertion> unsatisfiedAssertions = new ArrayList<>(roleAssertion.getAssertions());
         SID principal = roleAssertion.getPrincipal();
