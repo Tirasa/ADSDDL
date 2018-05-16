@@ -7,3 +7,9 @@ Tirasa (https://www.tirasa.net/).
 The following copyright notice(s) were affixed to portions of this code
 with which this file is now or was at one time distributed.
 
+/*
+ * Copyright © 2018 VMware, Inc. All Rights Reserved.
+ *
+ * COPYING PERMISSION STATEMENT
+ * SPDX-License-Identifier: Apache-2.0
+ */
