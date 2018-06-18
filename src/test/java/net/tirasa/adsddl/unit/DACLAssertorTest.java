@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
+ /*
  * Copyright © 2018 VMware, Inc. All Rights Reserved.
  *
  * COPYING PERMISSION STATEMENT
@@ -30,8 +30,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.naming.NamingException;
 
@@ -50,20 +48,25 @@ import net.tirasa.adsddl.ntsd.SID;
 
 public class DACLAssertorTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(DACLAssertorTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DACLAssertorTest.class);
 
     private SDDL sddl;
+
     private final String userSIDStr = "S-1-5-21-1835709989-2027683138-697581538-1139";
+
     private SID userSID;
+
     private final String[] groupSIDStr = { "S-1-5-21-1835709989-2027683138-697581538-1440",
-            "S-1-5-21-1835709989-2027683138-697581538-1107", "S-1-5-21-1835709989-2027683138-697581538-513" };
+        "S-1-5-21-1835709989-2027683138-697581538-1107", "S-1-5-21-1835709989-2027683138-697581538-513" };
+
     private final List<String> groupSIDList = Arrays.asList(groupSIDStr);
 
     @Before
     public void setUp() throws IOException, URISyntaxException {
-        final byte[] src = Files.readAllBytes(Paths.get(this.getClass().getResource("/sddlSampleForAssertor.bin").toURI()));
+        final byte[] src = Files.readAllBytes(Paths.get(this.getClass().getResource("/sddlSampleForAssertor.bin").
+                toURI()));
         String hexString = javax.xml.bind.DatatypeConverter.printHexBinary(src);
-        logger.debug("SDDL hexDump: {}", hexString);
+        LOGGER.debug("SDDL hexDump: {}", hexString);
 
         this.sddl = new SDDL(src);
         userSID = SID.parse(getSidAsByteBuffer(userSIDStr).array());
@@ -139,7 +142,7 @@ public class DACLAssertorTest {
         for (String s : groupSIDList) {
             groupSIDs.add(SID.parse(getSidAsByteBuffer(s).array()));
         }
-        logger.debug("groupSIDs: {}", groupSIDs);
+        LOGGER.debug("groupSIDs: {}", groupSIDs);
         DomainJoinRoleAssertion djAssertion = new DomainJoinRoleAssertion(userSID, false, groupSIDs);
         boolean result = assertor.doAssert(djAssertion);
         Assert.assertTrue(result);

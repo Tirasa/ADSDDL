@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
+ /*
  * Copyright © 2018 VMware, Inc. All Rights Reserved.
  *
  * COPYING PERMISSION STATEMENT
@@ -53,12 +53,17 @@ import net.tirasa.adsddl.ntsd.utils.GUID;
  * A class which asserts whether the DACL (Discretionary Access Control List) of an AD object grants the principal of an
  * {@code AdRoleAssertion} all the rights which the assertion contains.<br/>
  * <br/>
- * The caller must specify the LDAP search filter which will be used to locate the given object in the domain & fetch its
- * {@code nTSecurityDescriptor} attribute, which contains the DACL. Alternatively, a constructor accepting a pre-created DACL is 
+ * The caller must specify the LDAP search filter which will be used to locate the given object in the domain & fetch
+ * its
+ * {@code nTSecurityDescriptor} attribute, which contains the DACL. Alternatively, a constructor accepting a pre-created
+ * DACL is
  * available. The DACL is then searched for all {@code ACE} entries which
- * are expected to satisfy {@code AceAssertions} specified by the {@code AdRoleAssertion}; the assertion is passed in to the
- * method {@linkplain doAssert}. If there are unsatisfied assertions, and the adRoleAssertion refers to a user, the evaluation is
- * repeated for all groups the user belongs to. The caller may then evaluate the result of {@linkplain doAssert} and identify
+ * are expected to satisfy {@code AceAssertions} specified by the {@code AdRoleAssertion}; the assertion is passed in to
+ * the
+ * method {@linkplain doAssert}. If there are unsatisfied assertions, and the adRoleAssertion refers to a user, the
+ * evaluation is
+ * repeated for all groups the user belongs to. The caller may then evaluate the result of {@linkplain doAssert} and
+ * identify
  * unsatisfied assertions by calling {@linkplain getUnsatisfiedAssertions}.
  *
  * @see https://msdn.microsoft.com/en-us/library/cc223510.aspx
@@ -96,12 +101,12 @@ public class DACLAssertor {
      * DACLAssertor constructor.
      *
      * @param searchFilter
-     *            LDAP search filter, locating an object whose DACL will be evaluated against the AdRoleAssertion. <b>NOTE: LDAP
-     *            filter escaping is the caller's responsibility</b>
+     * LDAP search filter, locating an object whose DACL will be evaluated against the AdRoleAssertion. <b>NOTE: LDAP
+     * filter escaping is the caller's responsibility</b>
      * @param searchGroups
-     *            whether to search groups of a user contained in the AdRoleAssertion
+     * whether to search groups of a user contained in the AdRoleAssertion
      * @param ldapContext
-     *            the pre-connected LDAP context
+     * the pre-connected LDAP context
      */
     public DACLAssertor(String searchFilter, boolean searchGroups, LdapContext ldapContext) {
         this.searchFilter = searchFilter;
@@ -113,9 +118,9 @@ public class DACLAssertor {
      * DACLAssertor constructor. This version takes a pre-created DACL.
      *
      * @param dacl
-     *            the DACL of the object to evaluate against the AdRoleAssertion
+     * the DACL of the object to evaluate against the AdRoleAssertion
      * @param searchGroups
-     *            whether to search groups of a user contained in the AdRoleAssertion
+     * whether to search groups of a user contained in the AdRoleAssertion
      */
     public DACLAssertor(ACL dacl, boolean searchGroups) {
         this.dacl = dacl;
@@ -123,7 +128,8 @@ public class DACLAssertor {
     }
 
     /**
-     * Compares the object DACL located by the searchFilter against the specified {@code AdRoleAssertion}, and determines whether
+     * Compares the object DACL located by the searchFilter against the specified {@code AdRoleAssertion}, and
+     * determines whether
      * that assertion's principal is granted all the rights which the assertion contains.<br/>
      * <br/>
      * When comparing ACEs of the DACL, only those of {@code AceType.ACCESS_ALLOWED_ACE_TYPE} or
@@ -133,16 +139,16 @@ public class DACLAssertor {
      * Once completed, any unsatisfied assertions can be obtained by calling {@linkplain getUnsatisfiedAssertions}.
      *
      * @param roleAssertion
-     *            the AdRoleAssertion
+     * the AdRoleAssertion
      * @return true if the DACL fulfills the claims of the roleAssertion, false otherwise.
      * @throws CommunicationException
-     *             if the context for searching the DACL is invalid or the domain cannot be reached
+     * if the context for searching the DACL is invalid or the domain cannot be reached
      * @throws NameNotFoundException
-     *             if the DACL search fails
+     * if the DACL search fails
      * @throws NamingException
-     *             if extracting the DACL fails or another JNDI issue occurs
+     * if extracting the DACL fails or another JNDI issue occurs
      * @throws SizeLimitExceededException
-     *             if more than one AD object found during DACL search
+     * if more than one AD object found during DACL search
      */
     public boolean doAssert(AdRoleAssertion roleAssertion) throws NamingException {
         boolean result = false;
@@ -205,7 +211,7 @@ public class DACLAssertor {
             if (results.hasMoreElements()) {
                 // result from search filter is not unique
                 throw new SizeLimitExceededException("The search filter '{}' matched more than one AD object");
-            }            
+            }
             final byte[] descbytes = (byte[]) res.getAttributes().get("nTSecurityDescriptor").get();
             final SDDL sddl = new SDDL(descbytes);
             dacl = sddl.getDacl();
@@ -223,14 +229,15 @@ public class DACLAssertor {
     }
 
     /**
-     * Evaluates whether the DACL fulfills the given AdRoleAssertion and returns the list of unsatisfied AceAssertions (if any).
+     * Evaluates whether the DACL fulfills the given AdRoleAssertion and returns the list of unsatisfied AceAssertions
+     * (if any).
      *
-     * If the assertor was constructed with {@code searchGroups = true} and the roleAssertion specifies a user, then all group
-     * SIDs contained in the roleAssertion will be tested for potential matches in the DACL if any rights are not directly granted
-     * to the user.
+     * If the assertor was constructed with {@code searchGroups = true} and the roleAssertion specifies a user, then
+     * all group SIDs contained in the roleAssertion will be tested for potential matches in the DACL if any rights are
+     * not directly granted to the user.
      *
      * @param roleAssertion
-     *            the AdRoleAssertion to test
+     * the AdRoleAssertion to test
      * @return List of unsatisfied AceAssertions (if any). Empty if none.
      */
     private List<AceAssertion> findUnsatisfiedAssertions(final AdRoleAssertion roleAssertion) {
@@ -240,7 +247,9 @@ public class DACLAssertor {
             final ACE ace = dacl.getAce(i);
             log.trace("ACE {}: {}", i, ace);
             if (ace.getSid() != null) {
-                acesBySIDMap.putIfAbsent(ace.getSid().toString(), new ArrayList<ACE>());
+                if (!acesBySIDMap.containsKey(ace.getSid().toString())) {
+                    acesBySIDMap.put(ace.getSid().toString(), new ArrayList<ACE>());
+                }
                 List<ACE> aces = acesBySIDMap.get(ace.getSid().toString());
                 aces.add(ace);
             }
@@ -254,26 +263,28 @@ public class DACLAssertor {
         List<ACE> principalAces = acesBySIDMap.get(principal.toString());
 
         if (principalAces == null) {
-            log.debug("findUnsatisfiedAssertions, no ACEs matching principal {} in DACL, will attempt to search member groups",
-                    principal);
+            log.debug("findUnsatisfiedAssertions, no ACEs matching principal {} in DACL, will attempt to search member "
+                    + "groups", principal);
         } else {
             findUnmatchedAssertions(principalAces, unsatisfiedAssertions);
             log.debug(
-                    "findUnsatisfiedAssertions, {} unsatisfied assertion(s) remain after checking the DACL against principal {}, searching member groups if > 0",
-                    unsatisfiedAssertions.size(), principal);
+                    "findUnsatisfiedAssertions, {} unsatisfied assertion(s) remain after checking the DACL against "
+                    + "principal {}, searching member groups if > 0", unsatisfiedAssertions.size(), principal);
         }
 
         if (!unsatisfiedAssertions.isEmpty() && searchGroups) {
             if (roleAssertion.isGroup()) {
                 log.warn(
-                        "findUnsatisfiedAssertions, unresolved assertions exist and requested to search member groups, but the principal is a group - returning");
+                        "findUnsatisfiedAssertions, unresolved assertions exist and requested to search member groups, "
+                        + "but the principal is a group - returning");
                 return unsatisfiedAssertions;
             }
 
             List<SID> tokenGroupSIDs = roleAssertion.getTokenGroups();
             if (tokenGroupSIDs == null) {
                 log.debug(
-                        "findUnsatisfiedAssertions, unresolved assertions exist and no token groups found in AdRoleAssertion - returning");
+                        "findUnsatisfiedAssertions, unresolved assertions exist and no token groups found in "
+                        + "AdRoleAssertion - returning");
                 return unsatisfiedAssertions;
             }
 
@@ -286,7 +297,8 @@ public class DACLAssertor {
                 log.debug("findUnsatisfiedAssertions, {} ACEs of group {}", principalAces.size(), grpSID);
                 findUnmatchedAssertions(principalAces, unsatisfiedAssertions);
                 if (unsatisfiedAssertions.isEmpty()) {
-                    log.info("findUnsatisfiedAssertions, all role assertions found in the DACL after searching {} group(s)",
+                    log.info("findUnsatisfiedAssertions, all role assertions found in the DACL after searching {} "
+                            + "group(s)",
                             groupCount);
                     break;
                 }
@@ -298,13 +310,14 @@ public class DACLAssertor {
     }
 
     /**
-     * Finds which AceAssertions are satisfied by the given list of ACEs, removes those from the unsatisfied list, and returns.
-     * Upon returning, only the assertions still unmatched will be in the given {@code unsatisfiedAssertions} list.
+     * Finds which AceAssertions are satisfied by the given list of ACEs, removes those from the unsatisfied list, and
+     * returns. Upon returning, only the assertions still unmatched will be in the given {@code unsatisfiedAssertions}
+     * list.
      *
      * @param aces
-     *            ACE list to be evaluated
+     * ACE list to be evaluated
      * @param unsatisfiedAssertions
-     *            list of AceAssertions currently unmatched in the DACL.
+     * list of AceAssertions currently unmatched in the DACL.
      */
     private void findUnmatchedAssertions(final List<ACE> aces, List<AceAssertion> unsatisfiedAssertions) {
         List<AceAssertion> unmatchedAssertions = null;
@@ -320,7 +333,8 @@ public class DACLAssertor {
             // can only match type ACCESS_ALLOWED or ACCESS_ALLOWED_OBJECT
             if (ace.getType().getValue() != AceType.ACCESS_ALLOWED_ACE_TYPE.getValue()
                     && ace.getType().getValue() != AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE.getValue()) {
-                log.debug("findUnmatchedAssertions, skipping ACE with non allowed object type: {}", ace.getType().getValue());
+                log.debug("findUnmatchedAssertions, skipping ACE with non allowed object type: {}",
+                        ace.getType().getValue());
                 continue;
             }
 
@@ -330,8 +344,13 @@ public class DACLAssertor {
                 if ((rightsMask & assertRight) == assertRight) {
                     // found a rights match
                     if (doObjectFlagsMatch(ace.getObjectFlags(), assertion.getObjectFlags())
-                            && doObjectTypesMatch(ace.getObjectType(), assertion.getObjectType(), assertion.getObjectFlags())
-                            && doInheritedObjectTypesMatch(ace.getInheritedObjectType(), assertion.getInheritedObjectType(),
+                            && doObjectTypesMatch(
+                                    ace.getObjectType(),
+                                    assertion.getObjectType(),
+                                    assertion.getObjectFlags())
+                            && doInheritedObjectTypesMatch(
+                                    ace.getInheritedObjectType(),
+                                    assertion.getInheritedObjectType(),
                                     assertion.getObjectFlags())
                             && doRequiredFlagsMatch(ace.getFlags(), assertion.getRequiredFlag())
                             && !isAceExcluded(ace.getFlags(), assertion.getExcludedFlag())) {
@@ -344,19 +363,20 @@ public class DACLAssertor {
     }
 
     /**
-     * Compares the AceObjectFlags attribute of an ACE against that of an AceAssertion. If the {@code assertionObjFlags} are null,
-     * a true result is returned.
+     * Compares the AceObjectFlags attribute of an ACE against that of an AceAssertion. If the {@code assertionObjFlags}
+     * are null, a true result is returned.
      *
      * @param aceObjFlags
-     *            object flags from the ACE
+     * object flags from the ACE
      * @param assertionObjFlags
-     *            object flags from the AceAssertion
+     * object flags from the AceAssertion
      * @return true if match, false if not
      */
     private boolean doObjectFlagsMatch(final AceObjectFlags aceObjFlags, final AceObjectFlags assertionObjFlags) {
         boolean res = true;
         if (assertionObjFlags != null) {
-            if (aceObjFlags != null && (aceObjFlags.asUInt() & assertionObjFlags.asUInt()) == assertionObjFlags.asUInt()) {
+            if (aceObjFlags != null
+                    && (aceObjFlags.asUInt() & assertionObjFlags.asUInt()) == assertionObjFlags.asUInt()) {
                 res = true;
             } else {
                 res = false;
@@ -371,11 +391,11 @@ public class DACLAssertor {
      * {@code assertionObjFlags} are null, or they do not specify ACE_OBJECT_TYPE_PRESENT, a true result is returned.
      *
      * @param aceObjectType
-     *            byte array containing the ACE objectType GUID
+     * byte array containing the ACE objectType GUID
      * @param assertionObjectType
-     *            String containing the AceAssertion objectType
+     * String containing the AceAssertion objectType
      * @param assertionObjFlags
-     *            AceObjectFlags from the AceAssertion
+     * AceObjectFlags from the AceAssertion
      * @return true if match, false if not
      */
     private boolean doObjectTypesMatch(byte[] aceObjectType, final String assertionObjectType,
@@ -385,7 +405,8 @@ public class DACLAssertor {
             return res;
         }
 
-        if ((assertionObjFlags.asUInt() & Flag.ACE_OBJECT_TYPE_PRESENT.getValue()) == Flag.ACE_OBJECT_TYPE_PRESENT.getValue()) {
+        if ((assertionObjFlags.asUInt()
+                & Flag.ACE_OBJECT_TYPE_PRESENT.getValue()) == Flag.ACE_OBJECT_TYPE_PRESENT.getValue()) {
             if (aceObjectType == null || !GUID.getGuidAsString(aceObjectType).equals(assertionObjectType)) {
                 res = false;
             }
@@ -395,16 +416,16 @@ public class DACLAssertor {
     }
 
     /**
-     * Checks whether the inherited object type identified by the ACE matches the inherited object type of the AceAssertion given.
-     * If the {@code assertionObjFlags} are null, or they do not specify ACE_INHERITED_OBJECT_TYPE_PRESENT, a true result is
-     * returned.
+     * Checks whether the inherited object type identified by the ACE matches the inherited object type of the
+     * AceAssertion given. If the {@code assertionObjFlags} are null, or they do not specify
+     * ACE_INHERITED_OBJECT_TYPE_PRESENT, a true result is returned.
      *
      * @param aceInhObjectType
-     *            byte array containing the ACE inheritedObjectType GUID
+     * byte array containing the ACE inheritedObjectType GUID
      * @param assertionInhObjectType
-     *            String containing the AceAssertion inheritedObjectType
+     * String containing the AceAssertion inheritedObjectType
      * @param assertionObjFlags
-     *            AceObjectFlags from the AceAssertion
+     * AceObjectFlags from the AceAssertion
      * @return true if match, false if not
      */
     private boolean doInheritedObjectTypesMatch(byte[] aceInhObjectType, final String assertionInhObjectType,
@@ -415,7 +436,8 @@ public class DACLAssertor {
         }
 
         if ((assertionObjFlags.asUInt()
-                & Flag.ACE_INHERITED_OBJECT_TYPE_PRESENT.getValue()) == Flag.ACE_INHERITED_OBJECT_TYPE_PRESENT.getValue()) {
+                & Flag.ACE_INHERITED_OBJECT_TYPE_PRESENT.getValue())
+                == Flag.ACE_INHERITED_OBJECT_TYPE_PRESENT.getValue()) {
             if (aceInhObjectType == null || !GUID.getGuidAsString(aceInhObjectType).equals(assertionInhObjectType)) {
                 res = false;
             }
@@ -426,13 +448,13 @@ public class DACLAssertor {
 
     /**
      * Checks whether the AceFlags attribute of the ACE contains the given AceFlag of the AceAssertion. If the
-     * {@code requiredFlag} is null, yet the {@code aceFlags} are not (or empty), or vice versa, or they do not contain the
-     * required flag, a false result is returned.
+     * {@code requiredFlag} is null, yet the {@code aceFlags} are not (or empty), or vice versa, or they do not contain
+     * the required flag, a false result is returned.
      *
      * @param aceFlags
-     *            list of AceFlags from the ACE
+     * list of AceFlags from the ACE
      * @param requiredFlag
-     *            AceFlag required by the AceAssertion (e.g., {@code AceFlag.CONTAINER_INHERIT_ACE})
+     * AceFlag required by the AceAssertion (e.g., {@code AceFlag.CONTAINER_INHERIT_ACE})
      * @return true if match, false if not
      */
     private boolean doRequiredFlagsMatch(final List<AceFlag> aceFlags, final AceFlag requiredFlag) {
@@ -451,13 +473,13 @@ public class DACLAssertor {
 
     /**
      * Checks whether the AceFlags attribute of the ACE contains the given AceFlag of the AceAssertion. If the
-     * {@code excludedFlag} is null, or the {@code aceFlags} are null (or empty), or are non-null and do DO NOT contain the
-     * excluded flag, a false result is returned. Otherwise, a true result is returned.
+     * {@code excludedFlag} is null, or the {@code aceFlags} are null (or empty), or are non-null and do DO NOT contain
+     * the excluded flag, a false result is returned. Otherwise, a true result is returned.
      *
      * @param aceFlags
-     *            list of AceFlags from the ACE
+     * list of AceFlags from the ACE
      * @param excludedFlag
-     *            AceFlag disallowed by the AceAssertion (e.g., {@code AceFlag.INHERIT_ONLY_ACE})
+     * AceFlag disallowed by the AceAssertion (e.g., {@code AceFlag.INHERIT_ONLY_ACE})
      * @return true if AceFlags is excluded, false if not
      */
     private boolean isAceExcluded(final List<AceFlag> aceFlags, final AceFlag excludedFlag) {
