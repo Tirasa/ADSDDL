@@ -219,7 +219,7 @@ public class SID {
      * @return the current SID instance.
      */
     public SID setIdentifierAuthority(byte[] identifierAuthority) {
-        if (identifierAuthority == null || identifierAuthority.length != 6) {
+        if (identifierAuthority == null || identifierAuthority.length != 4) {
             throw new IllegalArgumentException("Invalid identifier authority");
         }
 
