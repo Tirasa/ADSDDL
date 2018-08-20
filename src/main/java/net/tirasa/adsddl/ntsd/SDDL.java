@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * contiguous block of memory and expresses all of its pointer fields as offsets from its beginning. The order of
  * appearance of pointer target fields is not required to be in any particular order; locating the OwnerSid, GroupSid,
  * Sacl, and/or Dacl should only be based on OffsetOwner, OffsetGroup, OffsetSacl, and/or OffsetDacl pointers found in
- * the fixed portion of the relative security descriptor.<58>
+ * the fixed portion of the relative security descriptor.<br>
  *
  * The self-relative form of the security descriptor is required if one wants to transmit the SECURITY_DESCRIPTOR
  * structure as an opaque data structure for transmission in communication protocols over a wire, or for storage on
@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
  * When a self-relative security descriptor is transmitted over a wire, it is sent in little-endian format and requires
  * no padding.
  *
- * @see https://msdn.microsoft.com/en-us/library/cc230366.aspx
+ * @see <a href="https://msdn.microsoft.com/en-us/library/cc230366.aspx" target="_top">cc230366</a>
  */
 public class SDDL {
 
@@ -446,7 +446,7 @@ public class SDDL {
      * Serializes SDDL as string.
      * @return SDDL string representation.
      * 
-     * @see https://msdn.microsoft.com/en-us/library/hh877835.aspx
+     * @see <a href="https://msdn.microsoft.com/en-us/library/hh877835.aspx" target="_top">hh877835</a>
      */
     @Override
     public String toString() {

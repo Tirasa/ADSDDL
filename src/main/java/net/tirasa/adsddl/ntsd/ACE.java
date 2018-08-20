@@ -44,22 +44,22 @@ public class ACE {
     protected static final Logger LOG = LoggerFactory.getLogger(ACE.class);
 
     /**
-     * @see AceType.
+     * @see AceType
      */
     private AceType type;
 
     /**
-     * @see AceFlag.
+     * @see AceFlag
      */
     private List<AceFlag> flags;
 
     /**
-     * @see AceRights.
+     * @see AceRights
      */
     private AceRights rights;
 
     /**
-     * @see AceObjectFlags.
+     * @see AceObjectFlags
      */
     private AceObjectFlags objectFlags;
 
@@ -161,7 +161,7 @@ public class ACE {
     /**
      * Gets ACE type.
      *
-     * @see AceType.
+     * @see AceType
      * @return ACE type.
      */
     public AceType getType() {
@@ -171,7 +171,7 @@ public class ACE {
     /**
      * Gets ACE flags.
      *
-     * @see AceFlag.
+     * @see AceFlag
      * @return ACE flags; empty list if no flag has been specified.
      */
     public List<AceFlag> getFlags() {
@@ -203,7 +203,7 @@ public class ACE {
     /**
      * An ACCESS_MASK that specifies the user rights allowed by this ACE.
      *
-     * @see AceRights.
+     * @see AceRights
      * @return ACE rights.
      */
     public AceRights getRights() {
@@ -214,7 +214,7 @@ public class ACE {
      * A 32-bit unsigned integer that specifies a set of bit flags that indicate whether the ObjectType and
      * InheritedObjectType fields contain valid data. This parameter can be one or more of the following values.
      *
-     * @see AceObjectFlags.
+     * @see AceObjectFlags
      *
      * @return Flags.
      */
@@ -258,7 +258,7 @@ public class ACE {
     /**
      * The SID of a trustee. The length of the SID MUST be a multiple of 4.
      *
-     * @see SID.
+     * @see SID
      * @return SID of the trustee.
      */
     public SID getSid() {
@@ -285,7 +285,7 @@ public class ACE {
      * Sets ACE type.
      *
      * @param type ACE type.
-     * @see AceType.
+     * @see AceType
      */
     public void setType(final AceType type) {
         this.type = type;
@@ -295,7 +295,7 @@ public class ACE {
      * Adds ACE flag.
      *
      * @param flag ACE flag.
-     * @see AceFlag.
+     * @see AceFlag
      */
     public void addFlag(final AceFlag flag) {
         this.flags.add(flag);
@@ -305,7 +305,7 @@ public class ACE {
      * Sets ACE rights.
      *
      * @param rights ACE rights.
-     * @see AceRights.
+     * @see AceRights
      */
     public void setRights(final AceRights rights) {
         this.rights = rights;
@@ -315,7 +315,7 @@ public class ACE {
      * Sets object flags.
      *
      * @param objectFlags ACE object flags.
-     * @see AceObjectFlags.
+     * @see AceObjectFlags
      */
     public void setObjectFlags(final AceObjectFlags objectFlags) {
         this.objectFlags = objectFlags;
@@ -336,7 +336,7 @@ public class ACE {
     /**
      * Sets inherited object type, a GUID (16 bytes) that identifies the type of child object that can inherit the ACE.
      *
-     * @param inheritedObjectType
+     * @param inheritedObjectType Inherited object type.
      */
     public void setInheritedObjectType(final byte[] inheritedObjectType) {
         this.inheritedObjectType = inheritedObjectType == null || inheritedObjectType.length == 0
@@ -348,7 +348,7 @@ public class ACE {
      * Sets the SID of a trustee.
      *
      * @param sid SID of the trustee.
-     * @see SID.
+     * @see SID
      */
     public void setSid(final SID sid) {
         this.sid = sid;

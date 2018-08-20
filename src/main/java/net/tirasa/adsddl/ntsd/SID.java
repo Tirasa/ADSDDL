@@ -48,8 +48,8 @@ import org.slf4j.LoggerFactory;
  *
  * Consumers of SIDs SHOULD NOT rely on anything more than that the SID has the appropriate structure.
  *
- * @see https://msdn.microsoft.com/en-us/library/cc230371.aspx
- * @see https://msdn.microsoft.com/en-us/library/gg465313.aspx
+ * @see <a href="https://msdn.microsoft.com/en-us/library/cc230371.aspx" target="_top">cc230371</a>
+ * @see <a href="https://msdn.microsoft.com/en-us/library/gg465313.aspx" target="_top">gg465313</a>
  */
 public class SID {
 

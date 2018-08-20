@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * control. The remaining fields are ignored. When performing an LDAP add operation, the client can supply an SD flags
  * control with the operation; however, it will be ignored by the server.
  *
- * @see https://msdn.microsoft.com/en-us/library/cc223733.aspx
+ * @see <a href="https://msdn.microsoft.com/en-us/library/cc223733.aspx" target="_top">cc223733</a>
  */
 public class SDFlagsControl extends BasicControl {
 

@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * An ACCESS_MASK that specifies the user rights allowed by this ACE.
  *
- * @see https://msdn.microsoft.com/en-us/library/cc230289.aspx
+ * @see <a href="https://msdn.microsoft.com/en-us/library/cc230289.aspx" target="_top">cc230289</a>
  */
 public class AceRights {
 
@@ -240,7 +240,7 @@ public class AceRights {
     /**
      * Adds standard ACE right.
      *
-     * @param right
+     * @param right Object right.
      * @return the carrent ACE rights.
      */
     public AceRights addOjectRight(final ObjectRight right) {

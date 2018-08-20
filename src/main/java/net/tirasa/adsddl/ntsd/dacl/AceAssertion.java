@@ -27,12 +27,11 @@ import net.tirasa.adsddl.ntsd.data.AceRights;
 import net.tirasa.adsddl.ntsd.data.AceRights.ObjectRight;
 
 /**
- * Represents an assertion that an {@code ACL} must contain an {@code ACE} (Access Control Entry) which meets the criteria within
- * this class. The criteria are defined as properties of the ACE.<br/>
- * <br/>
- *
- * Special interpretation of the 'excluded flag': If this flag is specified, and an ACE contains this flag, the ACE cannot be
- * considered to fulfill the assertion.
+ * Represents an assertion that an {@code ACL} must contain an {@code ACE} (Access Control Entry) which meets the 
+ * criteria within this class. The criteria are defined as properties of the ACE.<br>
+ * <br>
+ * Special interpretation of the 'excluded flag': If this flag is specified, and an ACE contains this flag, the ACE 
+ * cannot be considered to fulfill the assertion.
  */
 public class AceAssertion {
 

@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * An unsigned 8-bit integer that specifies a set of ACE type-specific control flags.
  *
- * @see https://msdn.microsoft.com/en-us/library/cc230296.aspx.
+ * @see <a href="https://msdn.microsoft.com/en-us/library/cc230296.aspx" target="_top">cc230296</a>
  */
 public enum AceFlag {
 

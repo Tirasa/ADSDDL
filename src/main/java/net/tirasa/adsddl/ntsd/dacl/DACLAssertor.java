@@ -51,26 +51,22 @@ import net.tirasa.adsddl.ntsd.utils.GUID;
 
 /**
  * A class which asserts whether the DACL (Discretionary Access Control List) of an AD object grants the principal of an
- * {@code AdRoleAssertion} all the rights which the assertion contains.<br/>
- * <br/>
- * The caller must specify the LDAP search filter which will be used to locate the given object in the domain & fetch
- * its
- * {@code nTSecurityDescriptor} attribute, which contains the DACL. Alternatively, a constructor accepting a pre-created
- * DACL is
- * available. The DACL is then searched for all {@code ACE} entries which
+ * {@code AdRoleAssertion} all the rights which the assertion contains.<br>
+ * <br>
+ * The caller must specify the LDAP search filter which will be used to locate the given object in the domain and fetch
+ * its {@code nTSecurityDescriptor} attribute, which contains the DACL. Alternatively, a constructor accepting a 
+ * pre-created DACL is available. The DACL is then searched for all {@code ACE} entries which
  * are expected to satisfy {@code AceAssertions} specified by the {@code AdRoleAssertion}; the assertion is passed in to
- * the
- * method {@linkplain doAssert}. If there are unsatisfied assertions, and the adRoleAssertion refers to a user, the
- * evaluation is
- * repeated for all groups the user belongs to. The caller may then evaluate the result of {@linkplain doAssert} and
- * identify
- * unsatisfied assertions by calling {@linkplain getUnsatisfiedAssertions}.
+ * the method {@linkplain doAssert}. If there are unsatisfied assertions, and the adRoleAssertion refers to a user, the
+ * evaluation is repeated for all groups the user belongs to. The caller may then evaluate the result of 
+ * {@linkplain net.tirasa.adsddl.ntsd.dacl.DACLAssertor#doAssert} and identify unsatisfied assertions by calling 
+ * {@linkplain getUnsatisfiedAssertions}.
  *
- * @see https://msdn.microsoft.com/en-us/library/cc223510.aspx
+ * @see <a href="https://msdn.microsoft.com/en-us/library/cc223510.aspx" target="_top">cc223510</a>
  */
 public class DACLAssertor {
 
-    private static final Logger log = LoggerFactory.getLogger(DACLAssertor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DACLAssertor.class);
 
     /**
      * LDAP search filter for the object whose DACL will be evaluated.
@@ -85,7 +81,7 @@ public class DACLAssertor {
     /**
      * Whether to search the groups of the roleAssertion principal.
      */
-    private boolean searchGroups;
+    private final boolean searchGroups;
 
     /**
      * The parsed DACL.
@@ -130,12 +126,12 @@ public class DACLAssertor {
     /**
      * Compares the object DACL located by the searchFilter against the specified {@code AdRoleAssertion}, and
      * determines whether
-     * that assertion's principal is granted all the rights which the assertion contains.<br/>
-     * <br/>
+     * that assertion's principal is granted all the rights which the assertion contains.<br>
+     * <br>
      * When comparing ACEs of the DACL, only those of {@code AceType.ACCESS_ALLOWED_ACE_TYPE} or
      * {@code AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE} will be considered for satisfying an {@code AceAssertion} of the
-     * roleAssertion.<br/>
-     * <br/>
+     * roleAssertion.<br>
+     * <br>
      * Once completed, any unsatisfied assertions can be obtained by calling {@linkplain getUnsatisfiedAssertions}.
      *
      * @param roleAssertion
@@ -154,7 +150,7 @@ public class DACLAssertor {
         boolean result = false;
 
         if (roleAssertion.getPrincipal() == null) {
-            log.warn("DACLAssertor.run, unable to run against a NULL principal specified in AdRoleAssertion");
+            LOG.warn("DACLAssertor.run, unable to run against a NULL principal specified in AdRoleAssertion");
             return result;
         }
 
@@ -164,7 +160,7 @@ public class DACLAssertor {
 
         this.unsatisfiedAssertions = findUnsatisfiedAssertions(roleAssertion);
         result = this.unsatisfiedAssertions.isEmpty() ? true : false;
-        log.info("doAssert, result: {}", result);
+        LOG.info("doAssert, result: {}", result);
         return result;
     }
 
@@ -190,19 +186,19 @@ public class DACLAssertor {
         controls.setReturningAttributes(new String[] { "name", "nTSecurityDescriptor" });
 
         if (ldapContext == null) {
-            log.warn("getDACL, cannot search for DACL with null ldapContext");
+            LOG.warn("getDACL, cannot search for DACL with null ldapContext");
             throw new CommunicationException("NULL ldapContext");
         }
 
         ldapContext.setRequestControls(new Control[] { new SDFlagsControl(0x00000004) });
 
-        log.debug("getDACL, attempting to fetch SD for searchFilter: {}, ldapContext: {}", searchFilter,
+        LOG.debug("getDACL, attempting to fetch SD for searchFilter: {}, ldapContext: {}", searchFilter,
                 ldapContext.getNameInNamespace());
         NamingEnumeration<SearchResult> results = null;
         try {
             results = ldapContext.search("", searchFilter, controls);
             if (!results.hasMoreElements()) {
-                log.warn("getDACL, searchFilter '{}' found nothing in context '{}'", searchFilter,
+                LOG.warn("getDACL, searchFilter '{}' found nothing in context '{}'", searchFilter,
                         ldapContext.getNameInNamespace());
                 throw new NameNotFoundException("No results found for: " + searchFilter);
             }
@@ -215,7 +211,7 @@ public class DACLAssertor {
             final byte[] descbytes = (byte[]) res.getAttributes().get("nTSecurityDescriptor").get();
             final SDDL sddl = new SDDL(descbytes);
             dacl = sddl.getDacl();
-            log.debug("getDACL, fetched SD & parsed DACL for searchFilter: {}, ldapContext: {}", searchFilter,
+            LOG.debug("getDACL, fetched SD & parsed DACL for searchFilter: {}, ldapContext: {}", searchFilter,
                     ldapContext.getNameInNamespace());
         } finally {
             try {
@@ -223,7 +219,7 @@ public class DACLAssertor {
                     results.close();
                 }
             } catch (NamingException e) {
-                log.debug("NamingException occurred while closing results: ", e);
+                LOG.debug("NamingException occurred while closing results: ", e);
             }
         }
     }
@@ -245,7 +241,7 @@ public class DACLAssertor {
 
         for (int i = 0; i < dacl.getAceCount(); i++) {
             final ACE ace = dacl.getAce(i);
-            log.trace("ACE {}: {}", i, ace);
+            LOG.trace("ACE {}: {}", i, ace);
             if (ace.getSid() != null) {
                 if (!acesBySIDMap.containsKey(ace.getSid().toString())) {
                     acesBySIDMap.put(ace.getSid().toString(), new ArrayList<ACE>());
@@ -263,18 +259,18 @@ public class DACLAssertor {
         List<ACE> principalAces = acesBySIDMap.get(principal.toString());
 
         if (principalAces == null) {
-            log.debug("findUnsatisfiedAssertions, no ACEs matching principal {} in DACL, will attempt to search member "
+            LOG.debug("findUnsatisfiedAssertions, no ACEs matching principal {} in DACL, will attempt to search member "
                     + "groups", principal);
         } else {
             findUnmatchedAssertions(principalAces, unsatisfiedAssertions);
-            log.debug(
+            LOG.debug(
                     "findUnsatisfiedAssertions, {} unsatisfied assertion(s) remain after checking the DACL against "
                     + "principal {}, searching member groups if > 0", unsatisfiedAssertions.size(), principal);
         }
 
         if (!unsatisfiedAssertions.isEmpty() && searchGroups) {
             if (roleAssertion.isGroup()) {
-                log.warn(
+                LOG.warn(
                         "findUnsatisfiedAssertions, unresolved assertions exist and requested to search member groups, "
                         + "but the principal is a group - returning");
                 return unsatisfiedAssertions;
@@ -282,7 +278,7 @@ public class DACLAssertor {
 
             List<SID> tokenGroupSIDs = roleAssertion.getTokenGroups();
             if (tokenGroupSIDs == null) {
-                log.debug(
+                LOG.debug(
                         "findUnsatisfiedAssertions, unresolved assertions exist and no token groups found in "
                         + "AdRoleAssertion - returning");
                 return unsatisfiedAssertions;
@@ -294,10 +290,10 @@ public class DACLAssertor {
                 if (principalAces == null) {
                     continue;
                 }
-                log.debug("findUnsatisfiedAssertions, {} ACEs of group {}", principalAces.size(), grpSID);
+                LOG.debug("findUnsatisfiedAssertions, {} ACEs of group {}", principalAces.size(), grpSID);
                 findUnmatchedAssertions(principalAces, unsatisfiedAssertions);
                 if (unsatisfiedAssertions.isEmpty()) {
-                    log.info("findUnsatisfiedAssertions, all role assertions found in the DACL after searching {} "
+                    LOG.info("findUnsatisfiedAssertions, all role assertions found in the DACL after searching {} "
                             + "group(s)",
                             groupCount);
                     break;
@@ -328,19 +324,19 @@ public class DACLAssertor {
         for (ACE ace : aces) {
             long rightsMask = ace.getRights().asUInt();
             unmatchedAssertions = new ArrayList<>(unsatisfiedAssertions);
-            log.debug("findUnmatchedAssertions, processing ACE: {}", ace);
+            LOG.debug("findUnmatchedAssertions, processing ACE: {}", ace);
 
             // can only match type ACCESS_ALLOWED or ACCESS_ALLOWED_OBJECT
             if (ace.getType().getValue() != AceType.ACCESS_ALLOWED_ACE_TYPE.getValue()
                     && ace.getType().getValue() != AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE.getValue()) {
-                log.debug("findUnmatchedAssertions, skipping ACE with non allowed object type: {}",
+                LOG.debug("findUnmatchedAssertions, skipping ACE with non allowed object type: {}",
                         ace.getType().getValue());
                 continue;
             }
 
             for (AceAssertion assertion : unmatchedAssertions) {
                 long assertRight = assertion.getAceRight().asUInt();
-                log.debug("findUnmatchedAssertions, assertRightMask: {}, aceRightsMask: {}", assertRight, rightsMask);
+                LOG.debug("findUnmatchedAssertions, assertRightMask: {}, aceRightsMask: {}", assertRight, rightsMask);
                 if ((rightsMask & assertRight) == assertRight) {
                     // found a rights match
                     if (doObjectFlagsMatch(ace.getObjectFlags(), assertion.getObjectFlags())
@@ -354,7 +350,7 @@ public class DACLAssertor {
                                     assertion.getObjectFlags())
                             && doRequiredFlagsMatch(ace.getFlags(), assertion.getRequiredFlag())
                             && !isAceExcluded(ace.getFlags(), assertion.getExcludedFlag())) {
-                        log.debug("findUnmatchedAssertions, found an assertion match for: {}", assertion);
+                        LOG.debug("findUnmatchedAssertions, found an assertion match for: {}", assertion);
                         unsatisfiedAssertions.remove(assertion);
                     }
                 }
@@ -382,7 +378,7 @@ public class DACLAssertor {
                 res = false;
             }
         }
-        log.debug("doObjectFlagsMatch, result: {}", res);
+        LOG.debug("doObjectFlagsMatch, result: {}", res);
         return res;
     }
 
@@ -411,7 +407,7 @@ public class DACLAssertor {
                 res = false;
             }
         }
-        log.debug("doObjectTypesMatch, result: {}", res);
+        LOG.debug("doObjectTypesMatch, result: {}", res);
         return res;
     }
 
@@ -442,7 +438,7 @@ public class DACLAssertor {
                 res = false;
             }
         }
-        log.debug("doInheritedObjectTypesMatch, result: {}", res);
+        LOG.debug("doInheritedObjectTypesMatch, result: {}", res);
         return res;
     }
 
@@ -467,7 +463,7 @@ public class DACLAssertor {
         } else if (aceFlags != null && !aceFlags.isEmpty()) {
             res = false;
         }
-        log.debug("doRequiredFlagsMatch, result: {}", res);
+        LOG.debug("doRequiredFlagsMatch, result: {}", res);
         return res;
     }
 
@@ -490,7 +486,7 @@ public class DACLAssertor {
                 res = true;
             }
         }
-        log.debug("isAceExcluded, result: {}", res);
+        LOG.debug("isAceExcluded, result: {}", res);
         return res;
     }
 }

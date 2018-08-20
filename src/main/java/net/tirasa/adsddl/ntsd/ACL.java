@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  * ACE in a SACL has a header that indicates whether auditing is triggered by success, failure, or both; a SID that
  * specifies a particular user or security group to monitor; and an access mask that lists the operations to audit.
  *
- * @see https://msdn.microsoft.com/en-us/library/cc230297.aspx
+ * @see <a href="https://msdn.microsoft.com/en-us/library/cc230297.aspx" target="_top">cc230297</a>
  */
 public class ACL {
 
@@ -147,8 +147,8 @@ public class ACL {
      * Gets ACL ACEs.
      *
      * @return list of ACEs.
-     *
-     * @see ACE.
+     * 
+     * @see ACE
      */
     public List<ACE> getAces() {
         return aces;
@@ -160,7 +160,7 @@ public class ACL {
      * @param i position.
      * @return ACL ACE.
      *
-     * @see ACE.
+     * @see ACE
      */
     public ACE getAce(final int i) {
         return aces.get(i);

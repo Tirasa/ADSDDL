@@ -23,7 +23,7 @@ import java.util.UUID;
  * A GUID, also known as a UUID, is a 16-byte structure, intended to serve as a unique identifier for an object. There
  * are three representations of a GUID, as described in the following sections.
  *
- * @see https://msdn.microsoft.com/en-us/library/cc230326.aspx
+ * @see <a href="https://msdn.microsoft.com/en-us/library/cc230326.aspx" target="_top">cc230326</a>
  */
 public class GUID {
 

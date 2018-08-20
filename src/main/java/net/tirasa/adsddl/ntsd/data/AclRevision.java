@@ -20,7 +20,7 @@ package net.tirasa.adsddl.ntsd.data;
  * on-the-wire management or manipulation are type 2 and type 4. No other form is valid for manipulation on the wire.
  * Therefore this field MUST be set to one of the following values.
  *
- * @see https://msdn.microsoft.com/en-us/library/cc230297.aspx
+ * @see <a href="https://msdn.microsoft.com/en-us/library/cc230297.aspx" target="_top">cc230297</a>
  */
 public enum AclRevision {
 

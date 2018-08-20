@@ -22,7 +22,7 @@ import java.util.List;
  * A 32-bit unsigned integer that specifies a set of bit flags that indicate whether the ObjectType and
  * InheritedObjectType fields contain valid data. This parameter can be one or more of the following values.
  *
- * @see https://msdn.microsoft.com/en-us/library/cc230289.aspx
+ * @see <a href="https://msdn.microsoft.com/en-us/library/cc230289.aspx" target="_top">cc230289</a>
  */
 public class AceObjectFlags {
 
