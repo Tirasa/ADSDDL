@@ -56,7 +56,7 @@ public class ACL {
     /**
      * Logger.
      */
-    protected static final Logger log = LoggerFactory.getLogger(ACL.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(ACL.class);
 
     /**
      * An unsigned 8-bit value that specifies the revision of the ACL. The only two legitimate forms of ACLs supported
@@ -220,18 +220,18 @@ public class ACL {
         final ACL ext = ACL.class.cast(acl);
 
         if (getSize() != ext.getSize()) {
-            log.debug("Different size");
+            LOG.debug("Different size");
             return false;
         }
 
         if (getAceCount() != ext.getAceCount()) {
-            log.debug("Different ace count");
+            LOG.debug("Different ace count");
             return false;
         }
 
         for (int i = 0; i < aces.size(); i++) {
             if (!getAce(i).equals(ext.getAce(i))) {
-                log.debug("Different ace: {}-{}", getAce(i), ext.getAce(i));
+                LOG.debug("Different ace: {}-{}", getAce(i), ext.getAce(i));
                 return false;
             }
         }

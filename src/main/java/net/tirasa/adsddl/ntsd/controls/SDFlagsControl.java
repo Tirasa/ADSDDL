@@ -51,7 +51,7 @@ public class SDFlagsControl extends BasicControl {
     /**
      * Logger.
      */
-    private static final Logger log = LoggerFactory.getLogger(SDFlagsControl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SDFlagsControl.class);
 
     /**
      * LDAP_SERVER_SD_FLAGS_OID.
@@ -103,7 +103,7 @@ public class SDFlagsControl extends BasicControl {
         try {
             this.value = berEncodedValue();
         } catch (Exception e) {
-            log.error("Error setting SD control flags", e);
+            LOG.error("Error setting SD control flags", e);
             this.value = new byte[0];
         }
     }

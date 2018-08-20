@@ -33,7 +33,7 @@ public class DummySocketFactory extends SSLSocketFactory {
 
     private static final long serialVersionUID = 1L;
 
-    private static final Logger log = LoggerFactory.getLogger(DummySocketFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DummySocketFactory.class);
 
     private SSLSocketFactory socketFactory;
 
@@ -43,7 +43,7 @@ public class DummySocketFactory extends SSLSocketFactory {
             ctx.init(null, new TrustManager[] { new DummyTrustManager() }, new SecureRandom());
             socketFactory = ctx.getSocketFactory();
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            log.debug("Connection error", e);
+            LOG.debug("Connection error", e);
         }
     }
 

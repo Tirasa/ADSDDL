@@ -43,6 +43,17 @@ public class NumberFacility {
     public static byte[] getBytes(final int value) {
         return ByteBuffer.allocate(4).putInt(value).array();
     }
+    
+    /**
+     * Gets byte array from integer.
+     *
+     * @param value integer.
+     * @param length array size.
+     * @return byte array.
+     */
+    public static byte[] getBytes(final int value, final int length) {
+        return ByteBuffer.allocate(length).putInt(value).array();
+    }
 
     /**
      * Remove 0x00 bytes from left side.

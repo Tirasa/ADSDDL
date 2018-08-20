@@ -56,7 +56,7 @@ public class SID {
     /**
      * Logger.
      */
-    protected static final Logger log = LoggerFactory.getLogger(SID.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(SID.class);
 
     /**
      * An 8-bit unsigned integer that specifies the revision level of the SID. This value MUST be set to 0x01.
@@ -303,24 +303,24 @@ public class SID {
         final SID ext = SID.class.cast(sid);
 
         if (getSize() != ext.getSize()) {
-            log.debug("Different size");
+            LOG.debug("Different size");
             return false;
         }
 
         if (getSubAuthorityCount() != ext.getSubAuthorityCount()) {
-            log.debug("Different sub authorities");
+            LOG.debug("Different sub authorities");
             return false;
         }
 
         if (!Arrays.equals(getIdentifierAuthority(), ext.getIdentifierAuthority())) {
-            log.debug("Different identifier authority: {}-{}",
+            LOG.debug("Different identifier authority: {}-{}",
                     Hex.get(identifierAuthority), Hex.get(ext.getIdentifierAuthority()));
             return false;
         }
 
         for (int i = 0; i < subAuthorities.size(); i++) {
             if (!Arrays.equals(subAuthorities.get(i), ext.getSubAuthorities().get(i))) {
-                log.debug("Different sub authority: {}-{}",
+                LOG.debug("Different sub authority: {}-{}",
                         Hex.get(subAuthorities.get(i)), Hex.get(ext.getSubAuthorities().get(i)));
                 return false;
             }

@@ -37,7 +37,7 @@ public class DirSyncControl extends BasicControl {
     /**
      * Logger.
      */
-    private static final Logger log = LoggerFactory.getLogger(DirSyncControl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DirSyncControl.class);
 
     private static final long serialVersionUID = -930993758829518418L;
 

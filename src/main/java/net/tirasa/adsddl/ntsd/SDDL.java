@@ -55,7 +55,7 @@ public class SDDL {
     /**
      * Logger.
      */
-    protected static final Logger log = LoggerFactory.getLogger(SDDL.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(SDDL.class);
 
     /**
      * An unsigned 8-bit value that specifies the revision of the SECURITY_DESCRIPTOR structure.
@@ -409,34 +409,34 @@ public class SDDL {
         final SDDL ext = SDDL.class.cast(o);
 
         if (getSize() != ext.getSize()) {
-            log.debug("Different size");
+            LOG.debug("Different size");
             return false;
         }
 
         if (!Arrays.equals(getControlFlags(), ext.getControlFlags())) {
-            log.debug("Different control flags");
+            LOG.debug("Different control flags");
             return false;
         }
 
         if (!getOwner().equals(ext.getOwner())) {
-            log.debug("Different owner ....\nEspected; {}\nActual: {}",
+            LOG.debug("Different owner ....\nEspected; {}\nActual: {}",
                     getOwner().toString(), ext.getOwner().toString());
             return false;
         }
 
         if (!getGroup().equals(ext.getGroup())) {
-            log.debug("Different group ....\nEspected; {}\nActual: {}",
+            LOG.debug("Different group ....\nEspected; {}\nActual: {}",
                     getGroup().toString(), ext.getGroup().toString());
             return false;
         }
 
         if (!getDacl().equals(ext.getDacl())) {
-            log.debug("Different dacl");
+            LOG.debug("Different dacl");
             return false;
         }
 
         if (!getSacl().equals(ext.getSacl())) {
-            log.debug("Different sacl");
+            LOG.debug("Different sacl");
             return false;
         }
         return true;

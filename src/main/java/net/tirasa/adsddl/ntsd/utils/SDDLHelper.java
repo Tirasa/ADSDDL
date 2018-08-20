@@ -120,7 +120,7 @@ public class SDDLHelper {
             self.setObjectFlags(new AceObjectFlags(AceObjectFlags.Flag.ACE_OBJECT_TYPE_PRESENT));
             self.setObjectType(GUID.getGuidAsByteArray(UCP_OBJECT_GUID));
             self.setRights(new AceRights().addOjectRight(AceRights.ObjectRight.CR));
-            SID sid = SID.newInstance(NumberFacility.getBytes(0x000000000001));
+            SID sid = SID.newInstance(NumberFacility.getBytes(0x000000000001, 6));
             sid.addSubAuthority(NumberFacility.getBytes(0));
             self.setSid(sid);
             sddl.getDacl().getAces().add(self);
@@ -131,7 +131,7 @@ public class SDDLHelper {
             all.setObjectFlags(new AceObjectFlags(AceObjectFlags.Flag.ACE_OBJECT_TYPE_PRESENT));
             all.setObjectType(GUID.getGuidAsByteArray(UCP_OBJECT_GUID));
             all.setRights(new AceRights().addOjectRight(AceRights.ObjectRight.CR));
-            final SID sid = SID.newInstance(NumberFacility.getBytes(0x000000000005));
+            final SID sid = SID.newInstance(NumberFacility.getBytes(0x000000000005, 6));
             sid.addSubAuthority(NumberFacility.getBytes(0x0A));
             all.setSid(sid);
             sddl.getDacl().getAces().add(all);
