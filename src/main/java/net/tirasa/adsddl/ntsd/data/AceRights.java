@@ -128,7 +128,9 @@ public class AceRights {
         /**
          * ADS_RIGHT_DS_CONTROL_ACCESS - The ObjectType GUID identifies an extended access right.
          */
-        CR(0x00000100);
+        CR(0x00000100),
+
+        WP(0x00000020);
 //        FA(0x001F01FF),
 //        FX(0x001200A0),
 //        FW(0x00100116),
@@ -139,7 +141,6 @@ public class AceRights {
 //        KW(0x00000006),
 //        LO(0x00000080),
 //        DT(0x00000040),
-//        WP(0x00000020),
 //        RP(0x00000010),
 //        SW(0x00000008),
 //        LC(0x00000004),
