@@ -19,6 +19,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Arrays;
 import net.tirasa.adsddl.ntsd.ACE;
 import net.tirasa.adsddl.ntsd.ACL;
@@ -37,14 +38,14 @@ import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractTest {
+public abstract class AbstractTest implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /**
      * Logger.
      */
-    protected static final Logger log = LoggerFactory.getLogger(AbstractTest.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(AbstractTest.class);
 
     protected static final String SDDL_ALL_SAMPLE = "/sddlSample.bin";
 
@@ -62,9 +63,9 @@ public abstract class AbstractTest {
     protected void UnMarshall(final byte[] src) throws Exception {
         final SDDL sddl = new SDDL(src);
 
-        if (log.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             printSDDL(sddl);
-            log.info(sddl.toString());
+            LOG.info(sddl.toString());
         }
 
         Assert.assertTrue(sddl.equals(new SDDL(sddl.toByteArray())));
@@ -73,9 +74,9 @@ public abstract class AbstractTest {
     protected void UserChangePassword(final byte[] src) throws Exception {
         final SDDL sddl = new SDDL(src);
 
-        if (log.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             printSDDL(sddl);
-            log.info(sddl.toString());
+            LOG.info(sddl.toString());
         }
 
         Assert.assertTrue(Arrays.equals(src, sddl.toByteArray()));
@@ -97,9 +98,9 @@ public abstract class AbstractTest {
     protected void ucpChangeUnMarshall(final byte[] src) throws Exception {
         final SDDL sddl = new SDDL(src);
 
-        if (log.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             printSDDL(sddl);
-            log.info(sddl.toString());
+            LOG.info(sddl.toString());
         }
 
         Assert.assertTrue(Arrays.equals(src, sddl.toByteArray()));
@@ -122,15 +123,15 @@ public abstract class AbstractTest {
     }
 
     protected void printSDDL(final SDDL sddl) {
-        log.debug("Revision: {}", Hex.get(sddl.getRevision()));
+        LOG.debug("Revision: {}", Hex.get(sddl.getRevision()));
 
-        log.debug("Control flags: ");
+        LOG.debug("Control flags: ");
         final boolean[] controlFlag = NumberFacility.getBits(sddl.getControlFlags());
 
         int count = 0;
         for (boolean flag : controlFlag) {
             if (flag) {
-                log.debug(" - {}", control[count]);
+                LOG.debug(" - {}", control[count]);
             }
             count++;
         }
@@ -138,31 +139,31 @@ public abstract class AbstractTest {
         // retrieve owner sid
         final SID owner = sddl.getOwner();
         if (owner != null) {
-            log.debug("Owner SID: ....");
+            LOG.debug("Owner SID: ....");
             printSID(owner);
         }
 
         // retrieve owner sid
         final SID group = sddl.getGroup();
         if (group != null) {
-            log.debug("Group SID: ....");
+            LOG.debug("Group SID: ....");
             printSID(group);
         }
 
         final ACL sacl = sddl.getSacl();
         if (sacl != null) {
-            log.debug("------------------------------------------");
-            log.debug("SACL ");
-            log.debug("------------------------------------------");
+            LOG.debug("------------------------------------------");
+            LOG.debug("SACL ");
+            LOG.debug("------------------------------------------");
 
             printACL(sacl);
         }
 
         final ACL dacl = sddl.getDacl();
         if (dacl != null) {
-            log.debug("------------------------------------------");
-            log.debug("DACL ");
-            log.debug("------------------------------------------");
+            LOG.debug("------------------------------------------");
+            LOG.debug("DACL ");
+            LOG.debug("------------------------------------------");
 
             printACL(dacl);
         }
@@ -170,65 +171,65 @@ public abstract class AbstractTest {
 
     protected void printACL(final ACL acl) {
 
-        log.debug("Acl Revision: {}", acl.getRevision().name());
-        log.debug("Acl Size (bytes): {}", acl.getSize());
+        LOG.debug("Acl Revision: {}", acl.getRevision().name());
+        LOG.debug("Acl Size (bytes): {}", acl.getSize());
 
         int aceCount = acl.getAceCount();
-        log.debug("Ace Count: {}", aceCount);
+        LOG.debug("Ace Count: {}", aceCount);
 
         for (int i = 0; i < aceCount; i++) {
-            log.debug("------------------------------------------");
-            log.debug("ACE " + i);
-            log.debug("------------------------------------------");
+            LOG.debug("------------------------------------------");
+            LOG.debug("ACE " + i);
+            LOG.debug("------------------------------------------");
             final ACE ace = acl.getAce(i);
             printACE(ace);
         }
     }
 
     protected void printSID(final SID sid) {
-        log.debug("SID Revision: {}", Hex.get(sid.getRevision()));
+        LOG.debug("SID Revision: {}", Hex.get(sid.getRevision()));
 
         int subAuthCount = sid.getSubAuthorityCount();
-        log.debug("SID Sub Authorities Count: {}", subAuthCount);
-        log.debug("SID Identifier Authority: {}", Hex.get(sid.getIdentifierAuthority()));
-        log.debug("SID Sub Authorities: ");
+        LOG.debug("SID Sub Authorities Count: {}", subAuthCount);
+        LOG.debug("SID Identifier Authority: {}", Hex.get(sid.getIdentifierAuthority()));
+        LOG.debug("SID Sub Authorities: ");
         for (byte[] sub : sid.getSubAuthorities()) {
-            log.debug(" - {}", Hex.get(sub));
+            LOG.debug(" - {}", Hex.get(sub));
         }
     }
 
     protected void printACE(final ACE ace) {
-        log.debug("AceType: {}", ace.getType().name());
-        log.debug("AceFlags: ");
+        LOG.debug("AceType: {}", ace.getType().name());
+        LOG.debug("AceFlags: ");
         for (AceFlag flag : ace.getFlags()) {
-            log.debug(" - {}", flag);
+            LOG.debug(" - {}", flag);
         }
 
         int aceSize = ace.getSize();
-        log.debug("Ace Size (bytes): {}", aceSize);
+        LOG.debug("Ace Size (bytes): {}", aceSize);
 
-        log.debug("Ace Rights: ");
+        LOG.debug("Ace Rights: ");
         for (AceRights.ObjectRight right : ace.getRights().getObjectRights()) {
-            log.debug(" - {}", right.name());
+            LOG.debug(" - {}", right.name());
         }
 
         if (ace.getRights().getOthers() != 0) {
-            log.debug(" - OTHERS({})", Hex.get(NumberFacility.getUIntBytes(ace.getRights().getOthers())));
+            LOG.debug(" - OTHERS({})", Hex.get(NumberFacility.getUIntBytes(ace.getRights().getOthers())));
         }
 
         if (ace.getType() == AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE
                 || ace.getType() == AceType.ACCESS_DENIED_OBJECT_ACE_TYPE) {
-            log.debug("Flags: ");
+            LOG.debug("Flags: ");
             for (AceObjectFlags.Flag flag : ace.getObjectFlags().getFlags()) {
-                log.debug(" - {}", flag.name());
+                LOG.debug(" - {}", flag.name());
             }
 
             if (ace.getObjectFlags().getFlags().contains(AceObjectFlags.Flag.ACE_OBJECT_TYPE_PRESENT)) {
-                log.debug("ObjectType: {}", GUID.getGuidAsString(ace.getObjectType()));
+                LOG.debug("ObjectType: {}", GUID.getGuidAsString(ace.getObjectType()));
             }
 
             if (ace.getObjectFlags().getFlags().contains(AceObjectFlags.Flag.ACE_INHERITED_OBJECT_TYPE_PRESENT)) {
-                log.debug("InheritedObjectType: {}", GUID.getGuidAsString(ace.getInheritedObjectType()));
+                LOG.debug("InheritedObjectType: {}", GUID.getGuidAsString(ace.getInheritedObjectType()));
             }
         }
 
@@ -236,7 +237,7 @@ public abstract class AbstractTest {
         printSID(sid);
 
         if (ace.getApplicationData() != null && ace.getApplicationData().length > 0) {
-            log.debug("Application data: " + Hex.get(ace.getApplicationData()));
+            LOG.debug("Application data: " + Hex.get(ace.getApplicationData()));
         }
     }
 }

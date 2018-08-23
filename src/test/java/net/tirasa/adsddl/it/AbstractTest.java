@@ -35,10 +35,12 @@ public abstract class AbstractTest extends net.tirasa.adsddl.unit.AbstractTest {
 
     protected static String searchFilter;
 
+    protected static Properties prop;
+
     @BeforeClass
     @SuppressWarnings("unchecked")
     public static void setUpConnection() throws IOException {
-        final Properties prop = new Properties();
+        prop = new Properties();
         prop.load(AbstractTest.class.getResourceAsStream("/conf.properties"));
 
         @SuppressWarnings({ "UseOfObsoleteCollectionType", "rawtypes" })
@@ -64,7 +66,7 @@ public abstract class AbstractTest extends net.tirasa.adsddl.unit.AbstractTest {
             // Create the initial directory context
             ctx = new InitialLdapContext(env, null);
         } catch (NamingException e) {
-            log.error("Error initializing test context", e);
+            LOG.error("Error initializing test context", e);
             Assert.fail(e.getMessage());
         }
 
