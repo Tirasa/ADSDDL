@@ -15,6 +15,8 @@
  */
 package net.tirasa.adsddl.it;
 
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.util.Properties;
 import javax.naming.Context;
@@ -22,7 +24,6 @@ import javax.naming.NamingException;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 
 public abstract class AbstractTest extends net.tirasa.adsddl.unit.AbstractTest {
@@ -67,7 +68,7 @@ public abstract class AbstractTest extends net.tirasa.adsddl.unit.AbstractTest {
             ctx = new InitialLdapContext(env, null);
         } catch (NamingException e) {
             LOG.error("Error initializing test context", e);
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
 
         baseContext = prop.getProperty("baseContext");

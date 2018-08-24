@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Tirasa (info@tirasa.net)
+ * Copyright (C) 2018 Tirasa (info@tirasa.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,12 @@
  */
 package net.tirasa.adsddl.it;
 
+import static org.junit.Assert.assertEquals;
+
 import com.sun.jndi.ldap.ctl.DirSyncResponseControl;
+import java.util.AbstractMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -30,8 +34,6 @@ import javax.naming.directory.SearchResult;
 import javax.naming.ldap.Control;
 import javax.naming.ldap.LdapContext;
 import net.tirasa.adsddl.ntsd.controls.DirSyncControl;
-import org.apache.commons.lang3.tuple.Pair;
-import org.junit.Assert;
 
 import org.junit.Test;
 
@@ -53,7 +55,7 @@ public class DirSyncTest extends AbstractTest {
         // retrieve latest sync token
         ctx.setRequestControls(new Control[] { new DirSyncControl().setFlags(0x00000801) });
 
-        Pair<SyncToken, Set<SearchResult>> res = search(ctx, "(cn=__CONNID-NORES__)", searchCtls, true);
+        Map.Entry<SyncToken, Set<SearchResult>> res = search(ctx, "(cn=__CONNID-NORES__)", searchCtls, true);
 
         //  New user
         final String id = "syncUser01";
@@ -78,18 +80,16 @@ public class DirSyncTest extends AbstractTest {
                 ctx.destroySubcontext("CN=" + id + ",CN=Users," + baseContext);
                 ctx.createSubcontext("CN=" + id + ",CN=Users," + baseContext, attrs);
             } catch (NamingException ne2) {
-                ne2.printStackTrace();
                 LOG.error("Error creating user {}", id, ne2);
                 assert (false);
             }
-
         }
 
         try {
             // Check for user create synchronization
-            ctx.setRequestControls(new Control[] { new DirSyncControl((byte[]) res.getLeft().getValue()) });
-            Pair<SyncToken, Set<SearchResult>> previous = search(ctx, createDirSyncUFilter(), searchCtls, true);
-            Assert.assertEquals(0, previous.getRight().size());
+            ctx.setRequestControls(new Control[] { new DirSyncControl((byte[]) res.getKey().getValue()) });
+            Map.Entry<SyncToken, Set<SearchResult>> previous = search(ctx, createDirSyncUFilter(), searchCtls, true);
+            assertEquals(0, previous.getValue().size());
 
             // check for group update membership synchronization
             ModificationItem[] mod = new ModificationItem[] { new ModificationItem(
@@ -103,13 +103,13 @@ public class DirSyncTest extends AbstractTest {
                 assert (false);
             }
 
-            ctx.setRequestControls(new Control[] { new DirSyncControl((byte[]) res.getLeft().getValue()) });
+            ctx.setRequestControls(new Control[] { new DirSyncControl((byte[]) res.getKey().getValue()) });
             res = search(ctx, createDirSyncUFilter(), searchCtls, true);
-            Assert.assertEquals(2, res.getRight().size());
+            assertEquals(2, res.getValue().size());
 
-            ctx.setRequestControls(new Control[] { new DirSyncControl((byte[]) previous.getLeft().getValue()) });
+            ctx.setRequestControls(new Control[] { new DirSyncControl((byte[]) previous.getKey().getValue()) });
             res = search(ctx, createDirSyncUFilter(), searchCtls, true);
-            Assert.assertEquals(1, res.getRight().size());
+            assertEquals(1, res.getValue().size());
         } finally {
             ctx.destroySubcontext("CN=" + id + ",CN=Users," + baseContext);
         }
@@ -146,20 +146,18 @@ public class DirSyncTest extends AbstractTest {
         return filter.toString();
     }
 
-    private Pair<SyncToken, Set<SearchResult>> search(
+    private Map.Entry<SyncToken, Set<SearchResult>> search(
             final LdapContext ctx,
             final String filter,
             final SearchControls searchCtls,
             final boolean updateLastSyncToken) {
 
-        final Set<SearchResult> result = new HashSet<SearchResult>();
+        final Set<SearchResult> result = new HashSet<>();
         SyncToken latestSyncToken = null;
 
         String baseContextDn = prop.getProperty("baseContext");
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Searching from {}", baseContextDn);
-        }
+        LOG.debug("Searching from {}", baseContextDn);
 
         try {
             final NamingEnumeration<SearchResult> answer = ctx.search(baseContextDn, filter, searchCtls);
@@ -193,6 +191,6 @@ public class DirSyncTest extends AbstractTest {
                     baseContextDn, filter, searchCtls, e);
         }
 
-        return Pair.of(latestSyncToken, result);
+        return new AbstractMap.SimpleEntry<>(latestSyncToken, result);
     }
 }

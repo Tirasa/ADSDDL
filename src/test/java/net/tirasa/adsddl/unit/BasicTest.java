@@ -37,7 +37,7 @@ import org.junit.Test;
 
 public class BasicTest {
 
-    private static final byte[] guid = new byte[] {
+    private static final byte[] OBJECT_GUID = new byte[] {
         (byte) 0x53,
         (byte) 0x1A,
         (byte) 0x72,
@@ -57,8 +57,8 @@ public class BasicTest {
 
     @Test
     public void guid() {
-        assertTrue(Arrays.equals(GUID.getGuidAsByteArray(SDDLHelper.UCP_OBJECT_GUID), guid));
-        assertEquals(SDDLHelper.UCP_OBJECT_GUID, GUID.getGuidAsString(guid));
+        assertTrue(Arrays.equals(GUID.getGuidAsByteArray(SDDLHelper.UCP_OBJECT_GUID), OBJECT_GUID));
+        assertEquals(SDDLHelper.UCP_OBJECT_GUID, GUID.getGuidAsString(OBJECT_GUID));
     }
 
     @Test
@@ -154,6 +154,5 @@ public class BasicTest {
         } catch (Exception ex) {
             Logger.getLogger(BasicTest.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 }

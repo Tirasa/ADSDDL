@@ -19,7 +19,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import net.tirasa.adsddl.ntsd.controls.SDFlagsControl;
-
 import javax.naming.NamingEnumeration;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;

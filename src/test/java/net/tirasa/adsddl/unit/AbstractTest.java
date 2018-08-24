@@ -33,7 +33,6 @@ import net.tirasa.adsddl.ntsd.utils.GUID;
 import net.tirasa.adsddl.ntsd.utils.Hex;
 import net.tirasa.adsddl.ntsd.utils.NumberFacility;
 import net.tirasa.adsddl.ntsd.utils.SDDLHelper;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +41,6 @@ public abstract class AbstractTest implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * Logger.
-     */
     protected static final Logger LOG = LoggerFactory.getLogger(AbstractTest.class);
 
     protected static final String SDDL_ALL_SAMPLE = "/sddlSample.bin";
@@ -68,7 +64,7 @@ public abstract class AbstractTest implements Serializable {
             LOG.info(sddl.toString());
         }
 
-        Assert.assertTrue(sddl.equals(new SDDL(sddl.toByteArray())));
+        assertTrue(sddl.equals(new SDDL(sddl.toByteArray())));
     }
 
     protected void UserChangePassword(final byte[] src) throws Exception {
@@ -79,7 +75,7 @@ public abstract class AbstractTest implements Serializable {
             LOG.info(sddl.toString());
         }
 
-        Assert.assertTrue(Arrays.equals(src, sddl.toByteArray()));
+        assertTrue(Arrays.equals(src, sddl.toByteArray()));
 
         assertFalse(sddl.getDacl().getAces().isEmpty());
         boolean found = false;
@@ -103,7 +99,7 @@ public abstract class AbstractTest implements Serializable {
             LOG.info(sddl.toString());
         }
 
-        Assert.assertTrue(Arrays.equals(src, sddl.toByteArray()));
+        assertTrue(Arrays.equals(src, sddl.toByteArray()));
 
         for (ACE ace : sddl.getDacl().getAces()) {
             if ((ace.getType() == AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE
@@ -119,7 +115,7 @@ public abstract class AbstractTest implements Serializable {
             }
         }
 
-        Assert.assertFalse(Arrays.equals(src, sddl.toByteArray()));
+        assertFalse(Arrays.equals(src, sddl.toByteArray()));
     }
 
     protected void printSDDL(final SDDL sddl) {
@@ -170,7 +166,6 @@ public abstract class AbstractTest implements Serializable {
     }
 
     protected void printACL(final ACL acl) {
-
         LOG.debug("Acl Revision: {}", acl.getRevision().name());
         LOG.debug("Acl Size (bytes): {}", acl.getSize());
 
