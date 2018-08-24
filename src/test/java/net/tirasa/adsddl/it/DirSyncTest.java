@@ -1,11 +1,11 @@
-/**
+/*
  * Copyright (C) 2015 Tirasa (info@tirasa.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -78,6 +78,7 @@ public class DirSyncTest extends AbstractTest {
                 ctx.destroySubcontext("CN=" + id + ",CN=Users," + baseContext);
                 ctx.createSubcontext("CN=" + id + ",CN=Users," + baseContext, attrs);
             } catch (NamingException ne2) {
+                ne2.printStackTrace();
                 LOG.error("Error creating user {}", id, ne2);
                 assert (false);
             }
@@ -130,13 +131,16 @@ public class DirSyncTest extends AbstractTest {
 
         mfilter.append("(objectClass=group)");
 
-        ufilter.append("(&")
-                .append("(objectClass=user)")
-                .append("(memberOf").append("=").append(prop.getProperty("membership")).append(")")
-                .append(")");
+        ufilter.append("(&").
+                append("(objectCategory=person)(objectClass=user)").
+                append("(memberOf").append("=").append(prop.getProperty("membership")).append(")").
+                append(")");
 
-        filter.append("(|").append(ufilter).append(mfilter).
-                append("(&(isDeleted=").append("TRUE").append(")(objectClass=user)))");
+        filter.append("(|").
+                append(ufilter).
+                append(mfilter).
+                append("(&(isDeleted=").append("TRUE").append(")(objectClass=user))").
+                append(")");
 
         LOG.debug("Generated filter {}", filter.toString());
         return filter.toString();
