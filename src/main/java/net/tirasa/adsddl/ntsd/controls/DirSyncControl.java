@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Tirasa (info@tirasa.net)
+ * Copyright (C) 2018 Tirasa (info@tirasa.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package net.tirasa.adsddl.ntsd.controls;
 import java.nio.ByteBuffer;
 import javax.naming.ldap.BasicControl;
 import net.tirasa.adsddl.ntsd.utils.NumberFacility;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Active Directory directory synchronization (DirSync) control is an LDAP server extension that enables an application
@@ -56,13 +54,16 @@ public class DirSyncControl extends BasicControl {
      */
     private int flags = 0x80000801;
 
+    private final byte[] cookie;
+
     /**
      * Constructor.
      * Specify an empty cookie.
      */
     public DirSyncControl() {
         super(OID, true, null);
-        super.value = berEncodedValue(EMPTY_COOKIE);
+        this.cookie = EMPTY_COOKIE;
+        super.value = berEncodedValue();
     }
 
     /**
@@ -72,7 +73,8 @@ public class DirSyncControl extends BasicControl {
      */
     public DirSyncControl(byte[] cookie) {
         super(OID, true, cookie);
-        super.value = berEncodedValue(cookie);
+        this.cookie = cookie;
+        super.value = berEncodedValue();
     }
 
     /**
@@ -81,7 +83,7 @@ public class DirSyncControl extends BasicControl {
      * @param cookie cookie value to be encoded.
      * @return ber encoded cookie value.
      */
-    private byte[] berEncodedValue(byte[] cookie) {
+    private byte[] berEncodedValue() {
         final byte[] cookieSize = NumberFacility.leftTrim(NumberFacility.getBytes(cookie.length));
         final byte[] size = NumberFacility.leftTrim(NumberFacility.getBytes(14 + cookieSize.length + cookie.length));
 
@@ -107,6 +109,8 @@ public class DirSyncControl extends BasicControl {
 
     public DirSyncControl setFlags(final int flags) {
         this.flags = flags;
+        // value encoding must be regenerated to provide new flags ...
+        super.value = berEncodedValue();
         return this;
     }
 }
