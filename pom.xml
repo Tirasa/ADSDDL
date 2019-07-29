@@ -67,7 +67,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.sun.jndi.ldap</groupId>
+      <groupId>com.sun</groupId>
       <artifactId>ldapbp</artifactId>
       <version>${ldapbp.version}</version>
       <scope>test</scope>
