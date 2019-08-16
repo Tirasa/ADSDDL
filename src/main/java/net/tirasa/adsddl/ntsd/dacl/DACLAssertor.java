@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  /*
- * Copyright © 2018 VMware, Inc. All Rights Reserved.
+ * Copyright © 2018-2019 VMware, Inc. All Rights Reserved.
  *
  * COPYING PERMISSION STATEMENT
  * SPDX-License-Identifier: Apache-2.0
@@ -46,6 +46,7 @@ import net.tirasa.adsddl.ntsd.controls.SDFlagsControl;
 import net.tirasa.adsddl.ntsd.data.AceFlag;
 import net.tirasa.adsddl.ntsd.data.AceObjectFlags;
 import net.tirasa.adsddl.ntsd.data.AceObjectFlags.Flag;
+import net.tirasa.adsddl.ntsd.data.AceRights;
 import net.tirasa.adsddl.ntsd.data.AceType;
 import net.tirasa.adsddl.ntsd.utils.GUID;
 
@@ -60,7 +61,10 @@ import net.tirasa.adsddl.ntsd.utils.GUID;
  * the method {@linkplain doAssert}. If there are unsatisfied assertions, and the adRoleAssertion refers to a user, the
  * evaluation is repeated for all groups the user belongs to. The caller may then evaluate the result of 
  * {@linkplain net.tirasa.adsddl.ntsd.dacl.DACLAssertor#doAssert} and identify unsatisfied assertions by calling 
- * {@linkplain getUnsatisfiedAssertions}.
+ * {@linkplain getUnsatisfiedAssertions}.<br>
+ * <br>
+ * NOTE: The evaluation currently does not search for explicit denials of any rights asserted. This is a shortcoming
+ * which can be addressed to be more accurate.<br>
  *
  * @see <a href="https://msdn.microsoft.com/en-us/library/cc223510.aspx" target="_top">cc223510</a>
  */
@@ -360,7 +364,15 @@ public class DACLAssertor {
 
     /**
      * Compares the AceObjectFlags attribute of an ACE against that of an AceAssertion. If the {@code assertionObjFlags}
-     * are null, a true result is returned.
+     * are null, a true result is returned.<br>
+     * <br>
+     * If the {@code assertionObjFlags} are not null, then either the {@code aceObjFlags} must be a match, or they must
+     * not be set. The not set case is deemed a match because MS AD documentation states that if an object type
+     * (referred to by the flags) is also empty, then the ACE controls the ability to perform operations of the
+     * given access right on all object classes. In this case, the decision about the ACE matching (regarding the object)
+     * is left up to the {@linkplain doObjectTypesMatch} and {@linkplain doInheritedObjectTypesMatch} methods.<br>
+     * <br>
+     * An ACE will appear without object flags when it is for "Full Control" permissions.
      *
      * @param aceObjFlags
      * object flags from the ACE
@@ -369,16 +381,28 @@ public class DACLAssertor {
      * @return true if match, false if not
      */
     private boolean doObjectFlagsMatch(final AceObjectFlags aceObjFlags, final AceObjectFlags assertionObjFlags) {
+        if (assertionObjFlags != null && aceObjFlags != null) {
+            LOG.debug("doObjectFlagsMatch, assertionObjFlags: {}, aceObjFlags: {}", assertionObjFlags.asUInt(), aceObjFlags.asUInt());
+        } else if (assertionObjFlags != null) {
+            LOG.debug("doObjectFlagsMatch, assertionObjFlags: {}, aceObjFlags: null", assertionObjFlags.asUInt());
+        } else if (aceObjFlags != null) {
+            LOG.debug("doObjectFlagsMatch, assertionObjFlags: null, aceObjFlags: {}", aceObjFlags.asUInt());
+        }
         boolean res = true;
         if (assertionObjFlags != null) {
             if (aceObjFlags != null
                     && (aceObjFlags.asUInt() & assertionObjFlags.asUInt()) == assertionObjFlags.asUInt()) {
                 res = true;
+            } else if (aceObjFlags == null || aceObjFlags.asUInt() == 0) {
+                // MS docs state that if the object type is _not_ present - which is hinted at by presence of object flags -
+                // then the ACE controls that right on all object classes/attributes of such objects.
+                // So defer ultimate decision to object/inherited object type matching.
+                res = true;
             } else {
                 res = false;
             }
         }
-        LOG.debug("doObjectFlagsMatch, result: {}", res);
+        LOG.debug("doObjectFlagsMatch (or may be ignored), result: {}", res);
         return res;
     }
 
@@ -403,11 +427,11 @@ public class DACLAssertor {
 
         if ((assertionObjFlags.asUInt()
                 & Flag.ACE_OBJECT_TYPE_PRESENT.getValue()) == Flag.ACE_OBJECT_TYPE_PRESENT.getValue()) {
-            if (aceObjectType == null || !GUID.getGuidAsString(aceObjectType).equals(assertionObjectType)) {
+            if (aceObjectType != null && !GUID.getGuidAsString(aceObjectType).equals(assertionObjectType)) {
                 res = false;
             }
         }
-        LOG.debug("doObjectTypesMatch, result: {}", res);
+        LOG.debug("doObjectTypesMatch (or may be ignored), result: {}", res);
         return res;
     }
 
@@ -434,11 +458,11 @@ public class DACLAssertor {
         if ((assertionObjFlags.asUInt()
                 & Flag.ACE_INHERITED_OBJECT_TYPE_PRESENT.getValue())
                 == Flag.ACE_INHERITED_OBJECT_TYPE_PRESENT.getValue()) {
-            if (aceInhObjectType == null || !GUID.getGuidAsString(aceInhObjectType).equals(assertionInhObjectType)) {
+            if (aceInhObjectType != null && !GUID.getGuidAsString(aceInhObjectType).equals(assertionInhObjectType)) {
                 res = false;
             }
         }
-        LOG.debug("doInheritedObjectTypesMatch, result: {}", res);
+        LOG.debug("doInheritedObjectTypesMatch (or may be ignored), result: {}", res);
         return res;
     }
 
