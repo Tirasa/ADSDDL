@@ -39,18 +39,19 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.tirasa.adsddl.ntsd.dacl.AceAssertion;
-import net.tirasa.adsddl.ntsd.dacl.DACLAssertor;
-import net.tirasa.adsddl.ntsd.dacl.DomainJoinRoleAssertion;
 import net.tirasa.adsddl.ntsd.ACL;
 import net.tirasa.adsddl.ntsd.SDDL;
 import net.tirasa.adsddl.ntsd.SID;
+import net.tirasa.adsddl.ntsd.dacl.AceAssertion;
+import net.tirasa.adsddl.ntsd.dacl.DACLAssertor;
+import net.tirasa.adsddl.ntsd.dacl.DomainJoinRoleAssertion;
 
 public class DACLAssertorTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DACLAssertorTest.class);
 
     private SDDL sddl;
+    private SDDL sddl_denials;
 
     private final String userSIDStr = "S-1-5-21-1835709989-2027683138-697581538-1139";
 
@@ -63,13 +64,20 @@ public class DACLAssertorTest {
 
     @Before
     public void setUp() throws IOException, URISyntaxException {
-        final byte[] src = Files.readAllBytes(Paths.get(this.getClass().getResource("/sddlSampleForAssertor.bin").
+        byte[] src = Files.readAllBytes(Paths.get(this.getClass().getResource("/sddlSampleForAssertor.bin").
                 toURI()));
         String hexString = javax.xml.bind.DatatypeConverter.printHexBinary(src);
         LOGGER.debug("SDDL hexDump: {}", hexString);
 
         this.sddl = new SDDL(src);
         userSID = SID.parse(getSidAsByteBuffer(userSIDStr).array());
+
+        src = Files.readAllBytes(Paths.get(this.getClass().getResource("/sddlSampleForAssertor2.bin").
+                toURI()));
+        hexString = javax.xml.bind.DatatypeConverter.printHexBinary(src);
+        LOGGER.debug("SDDL 2 hexDump: {}", hexString);
+
+        this.sddl_denials = new SDDL(src);
     }
 
     private ByteBuffer getSidAsByteBuffer(String strSID) {
@@ -146,5 +154,26 @@ public class DACLAssertorTest {
         DomainJoinRoleAssertion djAssertion = new DomainJoinRoleAssertion(userSID, false, groupSIDs);
         boolean result = assertor.doAssert(djAssertion);
         Assert.assertTrue(result);
+    }
+
+    @Test
+    public void testDomainJoinRoleNegative_Denials() throws NamingException {
+        // This should test negatively because the userSID is denied one of the permissions (create computer),
+        // within the OU the SDDL was pulled from (not inherited).
+        ACL dacl = sddl_denials.getDacl();
+        DACLAssertor assertor = new DACLAssertor(dacl, true);
+
+        List<SID> groupSIDs = new ArrayList<>();
+        for (String s : groupSIDList) {
+            groupSIDs.add(SID.parse(getSidAsByteBuffer(s).array()));
+        }
+        LOGGER.debug("groupSIDs: {}", groupSIDs);
+        DomainJoinRoleAssertion djAssertion = new DomainJoinRoleAssertion(userSID, false, groupSIDs);
+        boolean result = assertor.doAssert(djAssertion);
+        Assert.assertFalse(result);
+
+        // should be 1 of them
+        List<AceAssertion> unsatisfiedAssertions = assertor.getUnsatisfiedAssertions();
+        Assert.assertEquals(1, unsatisfiedAssertions.size());
     }
 }
