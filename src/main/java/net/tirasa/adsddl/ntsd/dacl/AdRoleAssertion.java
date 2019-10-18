@@ -30,7 +30,7 @@ import net.tirasa.adsddl.ntsd.SID;
  * These criteria are considered the requirements of a given 'role', e.g., the ability to join computers to a domain an unlimited
  * number of times can be considered to be a role.
  *
- * An instance of this class can be passed to a {@code DACLAssertor} to actually perform the assertion against the DACL
+ * An instance of this class can be passed to a {@linkplain DACLAssertor} to actually perform the assertion against the DACL
  * (Discretionary Access Control List) of an AD object.
  */
 public abstract class AdRoleAssertion {

@@ -31,8 +31,9 @@ import net.tirasa.adsddl.ntsd.data.AceObjectFlags.Flag;
 import net.tirasa.adsddl.ntsd.data.AceRights;
 
 /**
- * Represents an {@linkplain AdRoleAssertion} which specifies the criteria required to join computers to an AD domain
- * without any restrictions.
+ * Represents an {@linkplain AdRoleAssertion} which specifies the criteria required to join or remove computers
+ * to/from an AD domain in a given container (& its children) without any restrictions. This includes the ability
+ * to reset AD computer passwords, which is needed by some systems that manage domain joined computers.
  */
 public class DomainJoinRoleAssertion extends AdRoleAssertion {
 
@@ -121,8 +122,7 @@ public class DomainJoinRoleAssertion extends AdRoleAssertion {
      * whether the principal is a group
      * @param tokenGroups
      * list of token group SIDs which should be searched if the principal itself does not meet all the
-     * criteria (when
-     * the principal is a user). May be null.
+     * criteria (when the principal is a user). May be null.
      */
     public DomainJoinRoleAssertion(SID principal, boolean isGroup, List<SID> tokenGroups) {
         super(Arrays.asList(DOMAIN_JOIN_ASSERTIONS), principal, isGroup, tokenGroups);

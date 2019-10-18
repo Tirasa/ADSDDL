@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- /*
- * Copyright © 2018-2019 VMware, Inc. All Rights Reserved.
- *
- * COPYING PERMISSION STATEMENT
- * SPDX-License-Identifier: Apache-2.0
- */
+/*
+* Copyright © 2018-2019 VMware, Inc. All Rights Reserved.
+*
+* COPYING PERMISSION STATEMENT
+* SPDX-License-Identifier: Apache-2.0
+*/
 package net.tirasa.adsddl.ntsd.dacl;
 
 import java.util.ArrayList;
@@ -46,7 +46,6 @@ import net.tirasa.adsddl.ntsd.controls.SDFlagsControl;
 import net.tirasa.adsddl.ntsd.data.AceFlag;
 import net.tirasa.adsddl.ntsd.data.AceObjectFlags;
 import net.tirasa.adsddl.ntsd.data.AceObjectFlags.Flag;
-import net.tirasa.adsddl.ntsd.data.AceRights;
 import net.tirasa.adsddl.ntsd.data.AceType;
 import net.tirasa.adsddl.ntsd.utils.GUID;
 
@@ -61,16 +60,22 @@ import net.tirasa.adsddl.ntsd.utils.GUID;
  * the method {@linkplain doAssert}. If there are unsatisfied assertions, and the adRoleAssertion refers to a user, the
  * evaluation is repeated for all groups the user belongs to. The caller may then evaluate the result of 
  * {@linkplain net.tirasa.adsddl.ntsd.dacl.DACLAssertor#doAssert} and identify unsatisfied assertions by calling 
- * {@linkplain getUnsatisfiedAssertions}.<br>
+ * {@linkplain net.tirasa.adsddl.ntsd.dacl.DACLAssertor#getUnsatisfiedAssertions}.<br>
  * <br>
- * NOTE: The evaluation currently does not search for explicit denials of any rights asserted. This is a shortcoming
- * which can be addressed to be more accurate.<br>
+ * Denied rights are now detected and included in the result, if they are determined to override satisfied rights.
+ * Only non-inherited denials can override a right which is granted. 
+ * The 'Everyone' AD group is also evaluted if constructed with {@code searchGroups = true}
  *
  * @see <a href="https://msdn.microsoft.com/en-us/library/cc223510.aspx" target="_top">cc223510</a>
  */
 public class DACLAssertor {
 
     private static final Logger LOG = LoggerFactory.getLogger(DACLAssertor.class);
+
+    /**
+     * SID of the 'Everyone' AD group.
+     */
+    private static final String EVERYONE_SID = "S-1-1-0";
 
     /**
      * LDAP search filter for the object whose DACL will be evaluated.
@@ -137,6 +142,7 @@ public class DACLAssertor {
      * roleAssertion.<br>
      * <br>
      * Once completed, any unsatisfied assertions can be obtained by calling {@linkplain getUnsatisfiedAssertions}.
+     * Denied rights are now detected and included in the result, if they are determined to override satisfied rights.
      *
      * @param roleAssertion
      * the AdRoleAssertion
@@ -178,7 +184,8 @@ public class DACLAssertor {
     }
 
     /**
-     * Fetches the DACL of the object which is evaluated by {@linkplain doAssert}
+     * Fetches the DACL of the object which is evaluated by
+     * {@linkplain net.tirasa.adsddl.ntsd.dacl.DACLAssertor#doAssert}
      *
      * @throws CommunicationException
      * @throws NameNotFoundException
@@ -230,11 +237,13 @@ public class DACLAssertor {
 
     /**
      * Evaluates whether the DACL fulfills the given AdRoleAssertion and returns the list of unsatisfied AceAssertions
-     * (if any).
-     *
+     * (if any).<br>
+     * <br>
      * If the assertor was constructed with {@code searchGroups = true} and the roleAssertion specifies a user, then
      * all group SIDs contained in the roleAssertion will be tested for potential matches in the DACL if any rights are
-     * not directly granted to the user.
+     * not directly granted to the user. Also, the 'Everyone' AD group will also be scanned.<br>
+     * <br>
+     * Denied rights are now detected and included in the resulting list.
      *
      * @param roleAssertion
      * the AdRoleAssertion to test
@@ -259,32 +268,39 @@ public class DACLAssertor {
         // Not using Java 8 or other libs for this to keep dependencies of ADSDDL as is.
         // ------------------------------
         List<AceAssertion> unsatisfiedAssertions = new ArrayList<>(roleAssertion.getAssertions());
+        List<AceAssertion> deniedAssertions = new ArrayList<>();
         SID principal = roleAssertion.getPrincipal();
         List<ACE> principalAces = acesBySIDMap.get(principal.toString());
 
         if (principalAces == null) {
             LOG.debug("findUnsatisfiedAssertions, no ACEs matching principal {} in DACL, will attempt to search member "
-                    + "groups", principal);
+                    + "groups if requested", principal);
         } else {
-            findUnmatchedAssertions(principalAces, unsatisfiedAssertions);
+            findUnmatchedAssertions(principalAces, unsatisfiedAssertions, deniedAssertions, roleAssertion.getAssertions());
             LOG.debug(
                     "findUnsatisfiedAssertions, {} unsatisfied assertion(s) remain after checking the DACL against "
-                    + "principal {}, searching member groups if > 0", unsatisfiedAssertions.size(), principal);
+                    + "principal {}, and {} denial(s); searching member groups if requested and existent",
+                    unsatisfiedAssertions.size(), principal, deniedAssertions.size());
         }
 
-        if (!unsatisfiedAssertions.isEmpty() && searchGroups) {
+        // There may be denials on groups even if we resolved all assertions - search groups if specified
+        if (searchGroups) {
             if (roleAssertion.isGroup()) {
                 LOG.warn(
-                        "findUnsatisfiedAssertions, unresolved assertions exist and requested to search member groups, "
-                        + "but the principal is a group - returning");
+                        "findUnsatisfiedAssertions, requested to search member groups, but the principal is a group - "
+                        + "running Everyone group scan before returning");
+                doEveryoneGroupScan(acesBySIDMap, unsatisfiedAssertions, deniedAssertions, roleAssertion.getAssertions());
+                mergeDenials(unsatisfiedAssertions, deniedAssertions);
                 return unsatisfiedAssertions;
             }
 
             List<SID> tokenGroupSIDs = roleAssertion.getTokenGroups();
             if (tokenGroupSIDs == null) {
                 LOG.debug(
-                        "findUnsatisfiedAssertions, unresolved assertions exist and no token groups found in "
-                        + "AdRoleAssertion - returning");
+                        "findUnsatisfiedAssertions, no token groups found in AdRoleAssertion - running Everyone group "
+                        + "scan before returning");
+                doEveryoneGroupScan(acesBySIDMap, unsatisfiedAssertions, deniedAssertions, roleAssertion.getAssertions());
+                mergeDenials(unsatisfiedAssertions, deniedAssertions);
                 return unsatisfiedAssertions;
             }
 
@@ -294,53 +310,76 @@ public class DACLAssertor {
                 if (principalAces == null) {
                     continue;
                 }
-                LOG.debug("findUnsatisfiedAssertions, {} ACEs of group {}", principalAces.size(), grpSID);
-                findUnmatchedAssertions(principalAces, unsatisfiedAssertions);
-                if (unsatisfiedAssertions.isEmpty()) {
-                    LOG.info("findUnsatisfiedAssertions, all role assertions found in the DACL after searching {} "
-                            + "group(s)",
-                            groupCount);
-                    break;
+                int unsatCount = unsatisfiedAssertions.size();
+                LOG.debug("findUnsatisfiedAssertions, {} unsatisfied(s); {} ACE(s) of group {} to scan",
+                            unsatCount, principalAces.size(), grpSID);
+                findUnmatchedAssertions(principalAces, unsatisfiedAssertions, deniedAssertions, roleAssertion.getAssertions());
+                if (unsatisfiedAssertions.isEmpty() && unsatCount > 0) {
+                    LOG.info("findUnsatisfiedAssertions, all role assertions found in in DACL after searching {} "
+                            + "group(s); scanning for denials", groupCount);
                 }
                 groupCount++;
             }
+
+            doEveryoneGroupScan(acesBySIDMap, unsatisfiedAssertions, deniedAssertions, roleAssertion.getAssertions());
         }
+
+        mergeDenials(unsatisfiedAssertions, deniedAssertions);
 
         return unsatisfiedAssertions;
     }
 
+    private void doEveryoneGroupScan(final HashMap<String, List<ACE>> acesBySIDMap, final List<AceAssertion> unsatisfiedAssertions,
+            final List<AceAssertion> deniedAssertions, final List<AceAssertion> roleAssertions) {
+        LOG.debug("doEveryoneGroupScan, starting");
+        List<ACE> everyoneACEs = acesBySIDMap.get(EVERYONE_SID);
+        findUnmatchedAssertions(everyoneACEs, unsatisfiedAssertions, deniedAssertions, roleAssertions);
+    }
+
     /**
-     * Finds which AceAssertions are satisfied by the given list of ACEs, removes those from the unsatisfied list, and
-     * returns. Upon returning, only the assertions still unmatched will be in the given {@code unsatisfiedAssertions}
-     * list.
+     * Finds which AceAssertions are satisfied by the given list of ACEs, and removes those from the unsatisfied list.
+     * Also finds ACEs which are explicitly denied and adds those to the deniedAssertions list if they match any
+     * roleAssertions. Upon returning, only the assertions still unmatched will be in the given 
+     * {@code unsatisfiedAssertions} list, and denials will accumulate in the {@code deniedAssertions} list.
      *
      * @param aces
      * ACE list to be evaluated
      * @param unsatisfiedAssertions
      * list of AceAssertions currently unmatched in the DACL.
+     * @param deniedAssertions
+     * list of AceAssertions denied in the DACL.
+     * @param roleAssertions
+     * the AceAssertions from the AdRoleAssertion
      */
-    private void findUnmatchedAssertions(final List<ACE> aces, List<AceAssertion> unsatisfiedAssertions) {
-        List<AceAssertion> unmatchedAssertions = null;
+    private void findUnmatchedAssertions(final List<ACE> aces, final List<AceAssertion> unsatisfiedAssertions,
+            final List<AceAssertion> deniedAssertions, final List<AceAssertion> roleAssertions) {
         if (aces == null || aces.isEmpty()) {
             return;
         }
 
         for (ACE ace : aces) {
             long rightsMask = ace.getRights().asUInt();
-            unmatchedAssertions = new ArrayList<>(unsatisfiedAssertions);
             LOG.debug("findUnmatchedAssertions, processing ACE: {}", ace);
 
-            // can only match type ACCESS_ALLOWED or ACCESS_ALLOWED_OBJECT
-            if (ace.getType().getValue() != AceType.ACCESS_ALLOWED_ACE_TYPE.getValue()
+            boolean isDenial = false;
+            if (ace.getType().getValue() == AceType.ACCESS_DENIED_ACE_TYPE.getValue()
+                    || ace.getType().getValue() == AceType.ACCESS_DENIED_OBJECT_ACE_TYPE.getValue()) {
+                LOG.debug("findUnmatchedAssertions, found denial ACE type: {} ", ace.getType().name());
+                isDenial = true;
+            }
+
+            // can only match type ACCESS_ALLOWED or ACCESS_ALLOWED_OBJECT, if not a denial
+            if (!isDenial && ace.getType().getValue() != AceType.ACCESS_ALLOWED_ACE_TYPE.getValue()
                     && ace.getType().getValue() != AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE.getValue()) {
                 LOG.debug("findUnmatchedAssertions, skipping ACE with non allowed object type: {}",
                         ace.getType().getValue());
                 continue;
             }
 
-            for (AceAssertion assertion : unmatchedAssertions) {
+            for (AceAssertion assertion : roleAssertions) {
                 long assertRight = assertion.getAceRight().asUInt();
                 LOG.debug("findUnmatchedAssertions, assertRightMask: {}, aceRightsMask: {}", assertRight, rightsMask);
+                boolean isMatch = false;
                 if ((rightsMask & assertRight) == assertRight) {
                     // found a rights match
                     if (doObjectFlagsMatch(ace.getObjectFlags(), assertion.getObjectFlags())
@@ -352,14 +391,73 @@ public class DACLAssertor {
                                     ace.getInheritedObjectType(),
                                     assertion.getInheritedObjectType(),
                                     assertion.getObjectFlags())
-                            && doRequiredFlagsMatch(ace.getFlags(), assertion.getRequiredFlag())
-                            && !isAceExcluded(ace.getFlags(), assertion.getExcludedFlag())) {
+                            && doRequiredFlagsMatch(ace.getFlags(), assertion.getRequiredFlag(), isDenial)
+                            && !isAceExcluded(ace.getFlags(), assertion.getExcludedFlag(), isDenial)) {
+                        isMatch = true;
+                    }
+                }
+                if (isMatch) {
+                    if (!isDenial) {
                         LOG.debug("findUnmatchedAssertions, found an assertion match for: {}", assertion);
                         unsatisfiedAssertions.remove(assertion);
+                    } else {
+                        LOG.debug("findUnmatchedAssertions, found an assertion DENIAL for: {}", assertion);
+                        addDeniedAssertion(deniedAssertions, assertion);
                     }
                 }
             }
         }
+    }
+
+    /**
+     * This routine adds the deniedAssertion to the given list of them, if not already present.
+     * Not using {@code Set.add} which relies on the AceAssertion equals method, because of the possible variance
+     * in AceAssertion properties besides the AceRights, which do not matter for purposes of tracking the denials.
+     * 
+     * @param deniedAssertions
+     * the list of already denied assertions
+     * @param assertion
+     * the assertion to add if not present in deniedAssertions
+     */
+    private void addDeniedAssertion(final List<AceAssertion> deniedAssertions, final AceAssertion assertion) {
+        long deniedRight = assertion.getAceRight().asUInt();
+        boolean found = false;
+        for (AceAssertion a : deniedAssertions) {
+            if ((a.getAceRight().asUInt() & deniedRight) == deniedRight) {
+                found = true;
+                break;
+            }
+       }
+       if (!found) {
+           deniedAssertions.add(assertion);
+       }
+    }
+
+    /**
+     * This routine merges deniedAssertions into the unsatisfiedAssertions, avoiding duplicates.
+     *
+     * @param unsatisfiedAssertions
+     * the list of unsatisifed assertions
+     * @param deniedAssertions
+     * list of denied assertions
+     */
+    private void mergeDenials(final List<AceAssertion> unsatisfiedAssertions, final List<AceAssertion> deniedAssertions) {
+        List<AceAssertion> toAddList = new ArrayList<>();
+        for (AceAssertion denial : deniedAssertions) {
+            boolean found = false;
+            for (AceAssertion unsat : unsatisfiedAssertions) {
+                if (unsat.getAceRight().asUInt() == denial.getAceRight().asUInt()) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                toAddList.add(denial);
+            }
+        }
+
+        unsatisfiedAssertions.addAll(toAddList);
+        LOG.debug("mergeDenials, finished with {} assertion(s) unsatisfied", unsatisfiedAssertions.size());
     }
 
     /**
@@ -468,18 +566,29 @@ public class DACLAssertor {
 
     /**
      * Checks whether the AceFlags attribute of the ACE contains the given AceFlag of the AceAssertion. If the
-     * {@code requiredFlag} is null, yet the {@code aceFlags} are not (or empty), or vice versa, or they do not contain
+     * {@code requiredFlag} is null, yet the {@code aceFlags} are not (or empty), or vice versa, or they DO NOT contain
      * the required flag, a false result is returned.
      *
      * @param aceFlags
      * list of AceFlags from the ACE
      * @param requiredFlag
      * AceFlag required by the AceAssertion (e.g., {@code AceFlag.CONTAINER_INHERIT_ACE})
+     * @param isDenial
+     * whether the AceType is a denial, in which case the aceFlags must not contain {@code AceFlag.INHERITED_ACE}
+     * and the requiredFlag is ignored.  
      * @return true if match, false if not
      */
-    private boolean doRequiredFlagsMatch(final List<AceFlag> aceFlags, final AceFlag requiredFlag) {
+    private boolean doRequiredFlagsMatch(final List<AceFlag> aceFlags, final AceFlag requiredFlag, final boolean isDenial) {
         boolean res = true;
-        if (requiredFlag != null) {
+        if (isDenial) {
+            // If the AceType is denial, the flags must NOT contain the inherited flag. Such denials are ineffective
+            // when countered by an allowed right, so we only consider non-inherited denials as a match.
+            if (aceFlags == null || !aceFlags.contains(AceFlag.INHERITED_ACE)) {
+                res = true;
+            } else {
+                res = false;
+            }
+        } else if (requiredFlag != null) {
             // aceFlags could be null if the ACE applies to 'this object only' and has no other flags set
             if (aceFlags == null || aceFlags.isEmpty() || !aceFlags.contains(requiredFlag)) {
                 res = false;
@@ -500,11 +609,13 @@ public class DACLAssertor {
      * list of AceFlags from the ACE
      * @param excludedFlag
      * AceFlag disallowed by the AceAssertion (e.g., {@code AceFlag.INHERIT_ONLY_ACE})
+     * @param isDenial
+     * whether the AceType is a denial, in which case the excludedFlag evaluation is skipped
      * @return true if AceFlags is excluded, false if not
      */
-    private boolean isAceExcluded(final List<AceFlag> aceFlags, final AceFlag excludedFlag) {
+    private boolean isAceExcluded(final List<AceFlag> aceFlags, final AceFlag excludedFlag, final boolean isDenial) {
         boolean res = false;
-        if (excludedFlag != null) {
+        if (excludedFlag != null && !isDenial) {
             // aceFlags could be null if the ACE applies to 'this object only' and has no other flags set
             if (aceFlags != null && !aceFlags.isEmpty() && aceFlags.contains(excludedFlag)) {
                 res = true;
