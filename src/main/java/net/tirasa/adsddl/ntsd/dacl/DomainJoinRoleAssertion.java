@@ -86,7 +86,7 @@ public class DomainJoinRoleAssertion extends AdRoleAssertion {
             null,
             null,
             AceFlag.CONTAINER_INHERIT_ACE,
-            AceFlag.INHERIT_ONLY_ACE);
+            null);
 
     protected static final AceAssertion READ_PERMISSIONS = new AceAssertion(
             AceRights.parseValue(0x00020000),
