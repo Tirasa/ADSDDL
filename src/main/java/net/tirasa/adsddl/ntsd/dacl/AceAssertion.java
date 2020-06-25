@@ -38,33 +38,44 @@ public class AceAssertion {
     /**
      * A single AceRight.
      */
-    private final AceRights aceRight;
+    private AceRights aceRight;
 
     /**
      * One or more AceObjectFlags. May be null.
      */
-    private final AceObjectFlags aceObjectFlags;
+    private AceObjectFlags aceObjectFlags;
 
     /**
      * Object type GUID. Must be set if {@code Flag.ACE_OBJECT_TYPE_PRESENT} is one of the AceObjectFlags; otherwise null.
      */
-    private final String objectType;
+    private String objectType;
 
     /**
      * Inherited Object type GUID. Must be set if {@code Flag.ACE_INHERITED_OBJECT_TYPE_PRESENT} is one of the AceObjectFlags;
      * otherwise null.
      */
-    private final String inheritedObjectType;
+    private String inheritedObjectType;
 
     /**
      * Single AceFlag that stipulates an ACE must contain it; may be null.
      */
-    private final AceFlag requiredFlag;
+    private AceFlag requiredFlag;
 
     /**
      * Single AceFlag that stipulates an ACE must NOT contain it; may be null.
      */
-    private final AceFlag excludedFlag;
+    private AceFlag excludedFlag;
+
+    /**
+     * AceAssertion constructor
+     *
+     * @param aceRight
+     *            A single AceRight (e.g.: use {@code AceRights.parseValue(0x00000004)} if {@code AceRights.ObjectRight} enum does
+     *            not contain desired right.) MUST be specified.
+     */
+    public AceAssertion(AceRights aceRight) {
+        this.aceRight = aceRight;
+    }
 
     /**
      * AceAssertion constructor
