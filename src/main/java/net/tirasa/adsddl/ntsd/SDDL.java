@@ -217,8 +217,8 @@ public class SDDL {
          * This field MUST be present if the OffsetOwner field is not zero.
          */
         if (offsetOwner > 0) {
-            pos = (int) (offsetOwner / 4);
             // read for OwnerSid
+            pos = (int) (offsetOwner / 4);
             owner = new SID();
             pos = owner.parse(buff, pos);
         }
@@ -444,8 +444,9 @@ public class SDDL {
 
     /**
      * Serializes SDDL as string.
+     *
      * @return SDDL string representation.
-     * 
+     *
      * @see <a href="https://msdn.microsoft.com/en-us/library/hh877835.aspx" target="_top">hh877835</a>
      */
     @Override
