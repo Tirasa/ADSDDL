@@ -594,7 +594,7 @@ public class DACLAssertor {
                 res = false;
             }
         } else if (aceFlags != null && !aceFlags.isEmpty()) {
-            res = false;
+            LOG.debug("doRequiredFlagsMatch, found aceFlags : {}, but not looking for any required flags", aceFlags);
         }
         LOG.debug("doRequiredFlagsMatch, result: {}", res);
         return res;

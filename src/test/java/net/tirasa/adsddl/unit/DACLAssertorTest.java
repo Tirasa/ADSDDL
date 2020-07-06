@@ -139,6 +139,7 @@ public class DACLAssertorTest {
         Assert.assertEquals(6, unsatisfiedAssertions.size());
     }
 
+
     @Test
     public void testDomainJoinRolePositive() throws NamingException {
         // This should test positively because while the userSID is only granted one of the permissions (create computer),
@@ -152,6 +153,39 @@ public class DACLAssertorTest {
         }
         LOGGER.debug("groupSIDs: {}", groupSIDs);
         DomainJoinRoleAssertion djAssertion = new DomainJoinRoleAssertion(userSID, false, groupSIDs);
+        boolean result = assertor.doAssert(djAssertion);
+        Assert.assertTrue(result);
+    }
+
+    @Test
+    public void testDomainJoinRoleNegativeWithMinPermissions() throws NamingException {
+        // This should test negatively because the userSID is only granted one of the permissions (create computer)
+        // and this test tells the assertor to NOT search groups.
+        ACL dacl = sddl.getDacl();
+        DACLAssertor assertor = new DACLAssertor(dacl, false);
+
+        DomainJoinRoleAssertion djAssertion = new DomainJoinRoleAssertion(userSID, false, null, true);
+        boolean result = assertor.doAssert(djAssertion);
+        Assert.assertFalse(result);
+
+        // should be 3 of them
+        List<AceAssertion> unsatisfiedAssertions = assertor.getUnsatisfiedAssertions();
+        Assert.assertEquals(4, unsatisfiedAssertions.size());
+    }
+
+    @Test
+    public void testDomainJoinRolePositiveWithMinPermissions() throws NamingException {
+        // This should test positively because while the userSID is only granted one of the permissions (create computer),
+        // the group SID ending with "-1440" has all of them, and the assertor will search groups.
+        ACL dacl = sddl.getDacl();
+        DACLAssertor assertor = new DACLAssertor(dacl, true);
+
+        List<SID> groupSIDs = new ArrayList<>();
+        for (String s : groupSIDList) {
+            groupSIDs.add(SID.parse(getSidAsByteBuffer(s).array()));
+        }
+        LOGGER.debug("groupSIDs: {}", groupSIDs);
+        DomainJoinRoleAssertion djAssertion = new DomainJoinRoleAssertion(userSID, false, groupSIDs, true);
         boolean result = assertor.doAssert(djAssertion);
         Assert.assertTrue(result);
     }
