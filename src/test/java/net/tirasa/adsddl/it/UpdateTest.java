@@ -47,8 +47,6 @@ import org.junit.Test;
 
 public class UpdateTest extends AbstractTest {
 
-    private static final long serialVersionUID = 1L;
-
     @Test
     public void readAllAndSaveWithoutChanges() throws Exception {
         final SearchControls controls = new SearchControls();

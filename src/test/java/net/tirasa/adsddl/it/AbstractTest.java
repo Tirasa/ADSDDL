@@ -28,8 +28,6 @@ import org.junit.BeforeClass;
 
 public abstract class AbstractTest extends net.tirasa.adsddl.unit.AbstractTest {
 
-    private static final long serialVersionUID = 1L;
-
     protected static LdapContext ctx;
 
     protected static String baseContext;

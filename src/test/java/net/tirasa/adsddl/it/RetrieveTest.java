@@ -30,8 +30,6 @@ import org.junit.Test;
 
 public class RetrieveTest extends AbstractTest {
 
-    private static final long serialVersionUID = 1L;
-
     @Test
     public void searchBySID() throws Exception {
         final SearchControls controls = new SearchControls();

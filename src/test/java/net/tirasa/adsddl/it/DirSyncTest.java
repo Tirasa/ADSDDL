@@ -34,12 +34,9 @@ import javax.naming.directory.SearchResult;
 import javax.naming.ldap.Control;
 import javax.naming.ldap.LdapContext;
 import net.tirasa.adsddl.ntsd.controls.DirSyncControl;
-
 import org.junit.Test;
 
 public class DirSyncTest extends AbstractTest {
-
-    private static final long serialVersionUID = 1L;
 
     @Test
     public void syncUser() throws Exception {
@@ -170,9 +167,7 @@ public class DirSyncTest extends AbstractTest {
                 final Control[] rspCtls = ctx.getResponseControls();
 
                 if (rspCtls != null) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Response Controls: {}", rspCtls.length);
-                    }
+                    LOG.debug("Response Controls: {}", rspCtls.length);
 
                     for (Control rspCtl : rspCtls) {
                         if (rspCtl instanceof DirSyncResponseControl) {
@@ -181,9 +176,7 @@ public class DirSyncTest extends AbstractTest {
                         }
                     }
 
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Latest sync token set to {}", latestSyncToken);
-                    }
+                    LOG.debug("Latest sync token set to {}", latestSyncToken);
                 }
             }
         } catch (NamingException e) {

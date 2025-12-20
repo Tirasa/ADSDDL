@@ -15,7 +15,6 @@
  */
 package net.tirasa.adsddl.unit;
 
-import static net.tirasa.adsddl.unit.AbstractTest.SDDL_ALL_SAMPLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -23,7 +22,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,7 +90,7 @@ public class BasicTest {
 
     @Test
     public void sddlToString() throws IOException, URISyntaxException {
-        final byte[] src = Files.readAllBytes(Paths.get(this.getClass().getResource(SDDL_ALL_SAMPLE).toURI()));
+        final byte[] src = Files.readAllBytes(Path.of(getClass().getResource(AbstractTest.SDDL_ALL_SAMPLE).toURI()));
         final SDDL sddl = new SDDL(src);
 
         // TODO: complete sddl string representation check

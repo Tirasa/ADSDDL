@@ -19,7 +19,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Arrays;
 import net.tirasa.adsddl.ntsd.ACE;
 import net.tirasa.adsddl.ntsd.ACL;
@@ -33,14 +32,11 @@ import net.tirasa.adsddl.ntsd.utils.GUID;
 import net.tirasa.adsddl.ntsd.utils.Hex;
 import net.tirasa.adsddl.ntsd.utils.NumberFacility;
 import net.tirasa.adsddl.ntsd.utils.SDDLHelper;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractTest implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public abstract class AbstractTest {
 
     protected static final Logger LOG = LoggerFactory.getLogger(AbstractTest.class);
 
@@ -75,9 +71,8 @@ public abstract class AbstractTest implements Serializable {
             printSDDL(sddl);
             LOG.info(sddl.toString());
         }
-        
-        // Assert.assertArrayEquals(src, sddl.toByteArray());
 
+        // Assert.assertArrayEquals(src, sddl.toByteArray());
         assertFalse(sddl.getDacl().getAces().isEmpty());
         boolean found = false;
         for (ACE ace : sddl.getDacl().getAces()) {
@@ -99,7 +94,7 @@ public abstract class AbstractTest implements Serializable {
             printSDDL(sddl);
             LOG.info(sddl.toString());
         }
-        
+
         byte[] currentContiguousBlock = sddl.toByteArray();
         // Assert.assertArrayEquals(src, sddl.toByteArray());
 
