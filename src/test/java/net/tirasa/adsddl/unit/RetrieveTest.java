@@ -17,7 +17,7 @@ package net.tirasa.adsddl.unit;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class RetrieveTest extends AbstractTest {
 

@@ -15,7 +15,7 @@
  */
 package net.tirasa.adsddl.it;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.sun.jndi.ldap.ctl.DirSyncResponseControl;
 import java.util.AbstractMap;
@@ -34,7 +34,7 @@ import javax.naming.directory.SearchResult;
 import javax.naming.ldap.Control;
 import javax.naming.ldap.LdapContext;
 import net.tirasa.adsddl.ntsd.controls.DirSyncControl;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DirSyncTest extends AbstractTest {
 

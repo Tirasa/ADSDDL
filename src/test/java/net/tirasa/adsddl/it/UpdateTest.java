@@ -15,11 +15,12 @@
  */
 package net.tirasa.adsddl.it;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,8 +43,7 @@ import net.tirasa.adsddl.ntsd.controls.SDFlagsControl;
 import net.tirasa.adsddl.ntsd.utils.GUID;
 import net.tirasa.adsddl.ntsd.utils.NumberFacility;
 import net.tirasa.adsddl.ntsd.utils.SDDLHelper;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class UpdateTest extends AbstractTest {
 
@@ -58,7 +58,7 @@ public class UpdateTest extends AbstractTest {
         NamingEnumeration<SearchResult> results = ctx.search(baseContext, searchFilter, controls);
 
         if (!results.hasMore()) {
-            Assert.fail();
+            fail();
         }
 
         SearchResult res = results.next();
@@ -80,7 +80,7 @@ public class UpdateTest extends AbstractTest {
         results = ctx.search(baseContext, searchFilter, controls);
 
         if (!results.hasMore()) {
-            Assert.fail();
+            fail();
         }
 
         res = results.next();
@@ -104,7 +104,7 @@ public class UpdateTest extends AbstractTest {
         NamingEnumeration<SearchResult> results = ctx.search(baseContext, searchFilter, controls);
 
         if (!results.hasMore()) {
-            Assert.fail();
+            fail();
         }
 
         SearchResult res = results.next();
@@ -131,7 +131,7 @@ public class UpdateTest extends AbstractTest {
         results = ctx.search(baseContext, searchFilter, controls);
 
         if (!results.hasMore()) {
-            Assert.fail();
+            fail();
         }
 
         res = results.next();
@@ -158,7 +158,7 @@ public class UpdateTest extends AbstractTest {
         NamingEnumeration<SearchResult> results = ctx.search(baseContext, searchFilter, controls);
 
         if (!results.hasMore()) {
-            Assert.fail();
+            fail();
         }
 
         SearchResult res = results.next();
@@ -182,7 +182,7 @@ public class UpdateTest extends AbstractTest {
         results = ctx.search(baseContext, searchFilter, controls);
 
         if (!results.hasMore()) {
-            Assert.fail();
+            fail();
         }
 
         res = results.next();
@@ -234,7 +234,7 @@ public class UpdateTest extends AbstractTest {
         NamingEnumeration<SearchResult> results = ctx.search(baseContext, searchFilter, controls);
 
         if (!results.hasMore()) {
-            Assert.fail();
+            fail();
         }
 
         SearchResult res = results.next();
@@ -258,7 +258,7 @@ public class UpdateTest extends AbstractTest {
         results = ctx.search(baseContext, searchFilter, controls);
 
         if (!results.hasMore()) {
-            Assert.fail();
+            fail();
         }
 
         res = results.next();
