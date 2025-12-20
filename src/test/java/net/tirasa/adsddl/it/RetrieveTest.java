@@ -15,8 +15,8 @@
  */
 package net.tirasa.adsddl.it;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.tirasa.adsddl.ntsd.controls.SDFlagsControl;
 import javax.naming.NamingEnumeration;
@@ -26,11 +26,9 @@ import javax.naming.ldap.Control;
 import net.tirasa.adsddl.ntsd.SID;
 import net.tirasa.adsddl.ntsd.utils.Hex;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class RetrieveTest extends AbstractTest {
-
-    private static final long serialVersionUID = 1L;
 
     @Test
     public void searchBySID() throws Exception {

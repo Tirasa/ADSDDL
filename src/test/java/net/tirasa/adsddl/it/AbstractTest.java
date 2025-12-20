@@ -15,7 +15,7 @@
  */
 package net.tirasa.adsddl.it;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -23,12 +23,10 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 public abstract class AbstractTest extends net.tirasa.adsddl.unit.AbstractTest {
-
-    private static final long serialVersionUID = 1L;
 
     protected static LdapContext ctx;
 
@@ -38,7 +36,7 @@ public abstract class AbstractTest extends net.tirasa.adsddl.unit.AbstractTest {
 
     protected static Properties prop;
 
-    @BeforeClass
+    @BeforeAll
     @SuppressWarnings("unchecked")
     public static void setUpConnection() throws IOException {
         prop = new Properties();
@@ -75,7 +73,7 @@ public abstract class AbstractTest extends net.tirasa.adsddl.unit.AbstractTest {
         searchFilter = prop.getProperty("searchFilter");
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() throws NamingException {
         ctx.close();
     }

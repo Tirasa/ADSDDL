@@ -21,36 +21,38 @@
  */
 package net.tirasa.adsddl.unit;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import javax.naming.NamingException;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import javax.xml.bind.DatatypeConverter;
 import net.tirasa.adsddl.ntsd.ACL;
 import net.tirasa.adsddl.ntsd.SDDL;
 import net.tirasa.adsddl.ntsd.SID;
 import net.tirasa.adsddl.ntsd.dacl.AceAssertion;
 import net.tirasa.adsddl.ntsd.dacl.DACLAssertor;
 import net.tirasa.adsddl.ntsd.dacl.DomainJoinRoleAssertion;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DACLAssertorTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DACLAssertorTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DACLAssertorTest.class);
 
     private SDDL sddl;
+
     private SDDL sddl_denials;
 
     private final String userSIDStr = "S-1-5-21-1835709989-2027683138-697581538-1139";
@@ -62,20 +64,20 @@ public class DACLAssertorTest {
 
     private final List<String> groupSIDList = Arrays.asList(groupSIDStr);
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException, URISyntaxException {
-        byte[] src = Files.readAllBytes(Paths.get(this.getClass().getResource("/sddlSampleForAssertor.bin").
-                toURI()));
-        String hexString = javax.xml.bind.DatatypeConverter.printHexBinary(src);
-        LOGGER.debug("SDDL hexDump: {}", hexString);
+        byte[] src = Files.readAllBytes(
+                Path.of(this.getClass().getResource("/sddlSampleForAssertor.bin").toURI()));
+        String hexString = DatatypeConverter.printHexBinary(src);
+        LOG.debug("SDDL hexDump: {}", hexString);
 
         this.sddl = new SDDL(src);
         userSID = SID.parse(getSidAsByteBuffer(userSIDStr).array());
 
-        src = Files.readAllBytes(Paths.get(this.getClass().getResource("/sddlSampleForAssertor2.bin").
-                toURI()));
+        src = Files.readAllBytes(
+                Path.of(this.getClass().getResource("/sddlSampleForAssertor2.bin").toURI()));
         hexString = javax.xml.bind.DatatypeConverter.printHexBinary(src);
-        LOGGER.debug("SDDL 2 hexDump: {}", hexString);
+        LOG.debug("SDDL 2 hexDump: {}", hexString);
 
         this.sddl_denials = new SDDL(src);
     }
@@ -132,13 +134,12 @@ public class DACLAssertorTest {
 
         DomainJoinRoleAssertion djAssertion = new DomainJoinRoleAssertion(userSID, false, null);
         boolean result = assertor.doAssert(djAssertion);
-        Assert.assertFalse(result);
+        assertFalse(result);
 
         // should be 6 of them
         List<AceAssertion> unsatisfiedAssertions = assertor.getUnsatisfiedAssertions();
-        Assert.assertEquals(6, unsatisfiedAssertions.size());
+        assertEquals(6, unsatisfiedAssertions.size());
     }
-
 
     @Test
     public void testDomainJoinRolePositive() throws NamingException {
@@ -151,10 +152,10 @@ public class DACLAssertorTest {
         for (String s : groupSIDList) {
             groupSIDs.add(SID.parse(getSidAsByteBuffer(s).array()));
         }
-        LOGGER.debug("groupSIDs: {}", groupSIDs);
+        LOG.debug("groupSIDs: {}", groupSIDs);
         DomainJoinRoleAssertion djAssertion = new DomainJoinRoleAssertion(userSID, false, groupSIDs);
         boolean result = assertor.doAssert(djAssertion);
-        Assert.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -166,11 +167,11 @@ public class DACLAssertorTest {
 
         DomainJoinRoleAssertion djAssertion = new DomainJoinRoleAssertion(userSID, false, null, true);
         boolean result = assertor.doAssert(djAssertion);
-        Assert.assertFalse(result);
+        assertFalse(result);
 
         // should be 3 of them
         List<AceAssertion> unsatisfiedAssertions = assertor.getUnsatisfiedAssertions();
-        Assert.assertEquals(4, unsatisfiedAssertions.size());
+        assertEquals(4, unsatisfiedAssertions.size());
     }
 
     @Test
@@ -184,10 +185,10 @@ public class DACLAssertorTest {
         for (String s : groupSIDList) {
             groupSIDs.add(SID.parse(getSidAsByteBuffer(s).array()));
         }
-        LOGGER.debug("groupSIDs: {}", groupSIDs);
+        LOG.debug("groupSIDs: {}", groupSIDs);
         DomainJoinRoleAssertion djAssertion = new DomainJoinRoleAssertion(userSID, false, groupSIDs, true);
         boolean result = assertor.doAssert(djAssertion);
-        Assert.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -201,13 +202,13 @@ public class DACLAssertorTest {
         for (String s : groupSIDList) {
             groupSIDs.add(SID.parse(getSidAsByteBuffer(s).array()));
         }
-        LOGGER.debug("groupSIDs: {}", groupSIDs);
+        LOG.debug("groupSIDs: {}", groupSIDs);
         DomainJoinRoleAssertion djAssertion = new DomainJoinRoleAssertion(userSID, false, groupSIDs);
         boolean result = assertor.doAssert(djAssertion);
-        Assert.assertFalse(result);
+        assertFalse(result);
 
         // should be 1 of them
         List<AceAssertion> unsatisfiedAssertions = assertor.getUnsatisfiedAssertions();
-        Assert.assertEquals(1, unsatisfiedAssertions.size());
+        assertEquals(1, unsatisfiedAssertions.size());
     }
 }
