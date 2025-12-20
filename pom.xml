@@ -20,12 +20,6 @@
   <modelVersion>4.0.0</modelVersion>
   <packaging>jar</packaging>
 
-  <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>9</version>
-  </parent>
-
   <groupId>net.tirasa</groupId>
   <artifactId>adsddl</artifactId>
   <version>1.10-SNAPSHOT</version>
@@ -53,6 +47,50 @@
     <url>scm:git:git@github.com:Tirasa/ADSDDL.git</url>
     <developerConnection>scm:git:git@github.com:Tirasa/ADSDDL.git</developerConnection>
   </scm>
+
+  <issueManagement>
+    <system>Github Issue</system>
+    <url>https://github.com/Tirasa/ADSDDL/issues</url>
+  </issueManagement>
+
+  <ciManagement>
+    <system>GitHub Workflow</system>
+    <url>https://github.com/Tirasa/ADSDDL/actions</url>
+  </ciManagement>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>central-portal-snapshots</id>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+    </snapshotRepository>
+    <repository>
+      <id>central-portal</id>
+      <url>https://central.sonatype.com</url>
+    </repository>
+  </distributionManagement>
+
+  <repositories>
+    <repository>
+      <id>central-portal-snapshots</id>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>atalassian</id>
+      <url>https://maven.atlassian.com/3rdparty/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -302,17 +340,11 @@
           </plugin>
         </plugins>
       </build>
-      
     </profile>
-    
+
     <profile>
-      <id>release-sign-artifacts</id>
-      <activation>
-        <property>
-          <name>performRelease</name>
-          <value>true</value>
-        </property>
-      </activation>
+      <id>central-portal-release</id>
+
       <build>
         <plugins>
           <plugin>
@@ -329,31 +361,53 @@
               </execution>
             </executions>
           </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.11.3</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.3.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+                <configuration>
+                  <includes>
+                    <include>${basedir}/LICENSE</include>
+                    <include>${basedir}/NOTICE</include>
+                  </includes>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.8.0</version>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central-portal</publishingServerId>
+              <waitUntil>uploaded</waitUntil>
+            </configuration>
+          </plugin>
         </plugins>
       </build>
     </profile>
   </profiles>
-  
-  <repositories>
-    <repository>
-      <id>sonatype</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>atalassian</id>
-      <url>https://maven.atlassian.com/3rdparty/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
 </project>
